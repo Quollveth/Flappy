@@ -4,10 +4,6 @@
 #define WINDOW_HEIGHT 600
 #define WINDOW_WIDTH  800
 #define TARGET_FPS 60
-Color BG_COLOR = {0x000000};
-
-SDL_Window* window = NULL;
-SDL_Renderer* renderer = NULL;
 
 #define addRect(rect) dbAppend(&toDraw, &(rect))
 #define removeRect(i) dbRemove(&toDraw, i)
@@ -15,13 +11,19 @@ SDL_Renderer* renderer = NULL;
 
 /**** INTERNAL ****/
 
+SDL_Window* window = NULL;
+SDL_Renderer* renderer = NULL;
+
 #define FRAME_TT 1000/TARGET_FPS
 #define FALSE 0
 #define TRUE 1
 #define getkey key.keysym.sym
+
+Color BG_COLOR = {0x000000};
 int last_frame_time = 0;
 int isRunning = FALSE;
-struct dBuffer toDraw = DBUF_INIT;
+
+static struct dBuffer toDraw = DBUF_INIT;
 
 void gameSetup();//called once, setup everything
 void gameInput(int key);//called every time a key is pressed
@@ -104,10 +106,7 @@ void render(){
     SDL_RenderClear(renderer);
 
     for(int i=0;i<toDraw.len;i++){
-        SDL_Rect current = GET_SDL_RECT(toDraw.buffer[i]);
-
-        SET_COLOR(renderer,toDraw.buffer[i].color);
-        SDL_RenderFillRect(renderer,&current);
+        
     }
 
     SDL_RenderPresent(renderer);
@@ -125,7 +124,10 @@ int main() {
         render();
     }
 
-    destroy_window();
+    for(int i=0;i<toDraw.len;i++){
+        printRect(&GET_SDL_RECT(toDraw.buffer[i]));
+    }
 
+    destroy_window();
     return 0;
 }

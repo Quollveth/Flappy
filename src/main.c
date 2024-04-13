@@ -2,19 +2,10 @@
 #include <SDL2/SDL.h>
 #include "./windowManager.h"
 
+
 void gameSetup(){
     //called once, setup everything
-    Rectangle rect;
-
-    rect.x = 10;
-    rect.y = 10;
-
-    rect.w = 50;
-    rect.h = 50;
-
-    rect.color.hex = 0x00ff8c;
-
-    addRect(rect);
+    
 }
 
 void gameInput(int key){
