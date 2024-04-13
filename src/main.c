@@ -120,6 +120,20 @@ int gameLogic(float delta_time){
         }
     }
 
+    //collision check
+    for(int i=0;i<nPipes;i+=2){
+        if(pipes[i] == NULL || pipes[i+1] == NULL){
+            continue;
+        }
+
+        if(
+            SDL_HasIntersection(&GET_SDL_RECT(bird),&GET_SDL_RECT(pipes[i])) || 
+            SDL_HasIntersection(&GET_SDL_RECT(bird),&GET_SDL_RECT(pipes[i+1]))
+        ){
+            dead = TRUE;
+        }
+    }
+
     return 0;
 }
 
