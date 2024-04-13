@@ -12,4 +12,4 @@ This is my first project using SDL
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [MIT License](LICENSE.md).
