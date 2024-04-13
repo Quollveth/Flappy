@@ -7,11 +7,12 @@
 #define MAX_PIPES 3
 
 Rectangle *bird;
+Rectangle *pipes[MAX_PIPES*2];
+int nPipes = 0;
 
 int buffered = FALSE;
 
-Rectangle *pipes[MAX_PIPES*2];
-int nPipes = 0;
+int dead = FALSE;
 
 Rectangle* createPipeSegment(int top,int gap){
     Rectangle *pipe = malloc(sizeof(Rectangle));
@@ -26,7 +27,6 @@ Rectangle* createPipeSegment(int top,int gap){
 }
 
 void createPipe(int i){
-    srand(time(NULL));
     int gap = rand() % 201 - 100;
 
     Rectangle *top = createPipeSegment(TRUE,gap);
@@ -41,8 +41,21 @@ void createPipe(int i){
     addRect(bottom);
 }
 
+void resetPipe(int i){
+    pipes[i]->x = WINDOW_WIDTH + 60;
+    pipes[i+1]->x = WINDOW_WIDTH + 60;
+
+    int gap = rand() % 201 - 100;
+
+    pipes[i]->h = 200 + gap;
+    pipes[i+1]->h = 200 - gap;
+
+    pipes[i+1]->y = WINDOW_HEIGHT - pipes[i+1]->h;
+}
+
 void gameSetup(){
     //called once, setup everything
+    srand(time(NULL));
     setBGColor(0x6ca8d6); //sky blue
 
     bird = malloc(sizeof(Rectangle));
@@ -74,21 +87,23 @@ int gameLogic(float delta_time){
     printf("\033[H"); // move cursor to top-left corner
     printf("\033[0;32mDelta time: %f\n\033[0m", delta_time);
     
-
+    if (dead) return 0;
+    
     //gravity
     bird->y += 200 * delta_time;
 
+    //flap
     if(buffered){
         bird->y -= 50;
         buffered = FALSE;
     }
 
     //boundry check
-    if(bird->y > WINDOW_HEIGHT){
-        bird->y = WINDOW_HEIGHT;
+    if(bird->y > WINDOW_HEIGHT - bird->h){
+        bird->y = WINDOW_HEIGHT - bird->h;
     }
-    if(bird->y < 0){
-        bird->y = 0;
+    if(bird->y < bird->h){
+        bird->y = bird->h;
     }
 
     //move the pipes
@@ -99,6 +114,10 @@ int gameLogic(float delta_time){
 
         pipes[i]->x -= 100 * delta_time;
         pipes[i+1]->x -= 100 * delta_time;
+
+        if(pipes[i]->x + pipes[i]->w < 0){
+            resetPipe(i);
+        }
     }
 
     return 0;
@@ -106,5 +125,4 @@ int gameLogic(float delta_time){
 
 void gameCleanup(){
     //called once, cleanup everything
-    free(bird);
 }

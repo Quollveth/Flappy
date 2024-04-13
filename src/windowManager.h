@@ -109,6 +109,10 @@ void render(){
     //render game objects
     for(int i = 0; i < toDraw.len; i++){
         Rectangle *rect = toDraw.buffer[i];
+        if(rect == NULL){
+            dbRemove(&toDraw,i);
+            continue;
+        }
         SET_COLOR(renderer,rect->color);
         SDL_RenderFillRect(renderer,&GET_SDL_RECT(rect));
     }
