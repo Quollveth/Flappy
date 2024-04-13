@@ -11,8 +11,8 @@ Rectangle *pipes[MAX_PIPES*2];
 int nPipes = 0;
 
 int buffered = FALSE;
-
 int dead = FALSE;
+int score = 0;
 
 Rectangle* createPipeSegment(int top,int gap){
     Rectangle *pipe = malloc(sizeof(Rectangle));
@@ -91,7 +91,7 @@ int gameLogic(float delta_time){
     //called every frame, return 1 to stop game 0 to continue
     printf("\033[2J"); // clear terminal screen
     printf("\033[H"); // move cursor to top-left corner
-    printf("\033[0;32mDelta time: %f\n\033[0m", delta_time);
+    printf("Score: %d\n",score);
     
     if (dead) return 0;
     
@@ -121,8 +121,9 @@ int gameLogic(float delta_time){
         pipes[i]->x -= 100 * delta_time;
         pipes[i+1]->x -= 100 * delta_time;
 
-        if(pipes[i]->x + pipes[i]->w < 0){
+        if(pipes[i]->x + pipes[i]->w/2 < 0){
             resetPipe(i);
+            score++;
         }
     }
 
