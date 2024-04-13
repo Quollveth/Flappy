@@ -5,7 +5,7 @@
 #define WINDOW_WIDTH  800
 #define TARGET_FPS 60
 
-#define addRect(rect) dbAppend(&toDraw, &(rect))
+#define addRect(rect) dbAppend(&toDraw, (rect))
 #define removeRect(i) dbRemove(&toDraw, i)
 #define setBGColor(color) (BG_COLOR = (color))
 
@@ -28,6 +28,7 @@ static struct dBuffer toDraw = DBUF_INIT;
 void gameSetup();//called once, setup everything
 void gameInput(int key);//called every time a key is pressed
 int gameLogic(float delta_time);//called every frame, return 1 to stop game 0 to continue
+void gameCleanup();//called once, cleanup everything
 
 int initialize_window(void) {
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
@@ -105,8 +106,11 @@ void render(){
     SET_COLOR(renderer,BG_COLOR);
     SDL_RenderClear(renderer);
 
-    for(int i=0;i<toDraw.len;i++){
-        
+    //render game objects
+    for(int i = 0; i < toDraw.len; i++){
+        Rectangle *rect = toDraw.buffer[i];
+        SET_COLOR(renderer,rect->color);
+        SDL_RenderFillRect(renderer,&GET_SDL_RECT(rect));
     }
 
     SDL_RenderPresent(renderer);
@@ -124,10 +128,7 @@ int main() {
         render();
     }
 
-    for(int i=0;i<toDraw.len;i++){
-        printRect(&GET_SDL_RECT(toDraw.buffer[i]));
-    }
-
+    gameCleanup();
     destroy_window();
     return 0;
 }
