@@ -3,11 +3,11 @@
 
 #define WINDOW_HEIGHT 600
 #define WINDOW_WIDTH  800
-#define TARGET_FPS 60
+#define TARGET_FPS 30
 
 #define addRect(rect) dbAppend(&toDraw, (rect))
 #define removeRect(i) dbRemove(&toDraw, i)
-#define setBGColor(color) (BG_COLOR = (color))
+#define setBGColor(color) (BG_COLOR.hex = (color))
 
 /**** INTERNAL ****/
 

@@ -3,44 +3,55 @@
 #include "./windowManager.h"
 
 
+Rectangle *bird;
+
+int buffered = FALSE;
+
 void gameSetup(){
     //called once, setup everything
+    setBGColor(0x6ca8d6); //sky blue
 
-    Rectangle *rect1 = malloc(sizeof(Rectangle));
+    bird = malloc(sizeof(Rectangle));
+    bird->x = 100;
+    bird->y = 0;
+    bird->w = 50;
+    bird->h = 50;
 
-    rect1->x = 10;
-    rect1->y = 10;
-    rect1->w = 50;
-    rect1->h = 50;
+    bird->color.hex = 0xfcba03; //yellow
 
-    rect1->color.hex = 0xFF0000;
-
-    addRect(rect1);
-
-    Rectangle *rect2 = malloc(sizeof(Rectangle));
-
-    rect2->x = 100;
-    rect2->y = 100;
-    rect2->w = 50;
-    rect2->h = 50;
-
-    rect2->color.hex = 0x00FF00;
-
-    addRect(rect2);
+    addRect(bird);
 
 }
 
 void gameInput(int key){
     //called every time a key is pressed
+
+    if(key == SDLK_SPACE){
+        buffered = TRUE;
+    }
+
 }
+
 
 int gameLogic(float delta_time){
     //called every frame, return 1 to stop game 0 to continue
+    printf("\033[2J"); // clear terminal screen
+    printf("\033[H"); // move cursor to top-left corner
+    printf("\033[0;32mDelta time: %f\n\033[0m", delta_time);
+    
+
+    //gravity
+    bird->y += 200 * delta_time;
+
+    if(buffered){
+        bird->y -= 100;
+        buffered = FALSE;
+    }
+
     return 0;
 }
 
 void gameCleanup(){
     //called once, cleanup everything
-    free(toDraw.buffer[0]);
-    free(toDraw.buffer[1]);
+    free(bird);
 }
