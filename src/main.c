@@ -4,7 +4,7 @@
 #include <SDL2/SDL.h>
 #include "./windowManager.h"
 
-#define MAX_PIPES 3
+#define MAX_PIPES 8
 
 Rectangle *bird;
 Rectangle *pipes[MAX_PIPES*2];
@@ -26,11 +26,14 @@ Rectangle* createPipeSegment(int top,int gap){
     return pipe;
 }
 
-void createPipe(int i){
+void createPipe(int i,int offset){
     int gap = rand() % 201 - 100;
 
     Rectangle *top = createPipeSegment(TRUE,gap);
     Rectangle *bottom = createPipeSegment(FALSE,gap);
+
+    top->x += offset;
+    bottom->x += offset;
 
     pipes[i] = top;
     pipes[i+1] = bottom;
@@ -67,7 +70,10 @@ void gameSetup(){
     bird->color.hex = 0xfcba03; //yellow
 
     addRect(bird);
-    createPipe(0);
+
+    for(int i=0;i<MAX_PIPES;i+=2){
+        createPipe(i*2,i*200);
+    }
 
 }
 
