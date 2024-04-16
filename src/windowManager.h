@@ -37,6 +37,7 @@ enum err_types {
 };
 
 gameObject* testObject;
+gameObject* testObject2;
 
 static int initialize_window() {
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
@@ -130,9 +131,13 @@ static void setup(){
     gameState.isRunning = true;
 
     testObject = initializeObject(gameState.renderer,"./assets/placeholder.bmp");
+    testObject2 = initializeObject(gameState.renderer,"./assets/placeholder.bmp");
 
-    testObject->bounds->x = 150;
-    testObject->bounds->y = 50;
+    testObject->bounds->x = 300;
+    testObject->bounds->y = 300;
+
+    dbAppend(&gameState.toDraw,testObject);
+    dbAppend(&gameState.toDraw,testObject2);
 }
 
 static void process_input(){
@@ -174,13 +179,8 @@ static void render(){
 
     //render game objects
     for(int i=0;i<gameState.toDraw.len;i++){
-        //render gameState.toDraw[i] in here
+        SDL_RenderCopy(gameState.renderer,gameState.toDraw.buffer[i]->spriteTexture,NULL,gameState.toDraw.buffer[i]->bounds);
     }
-
-    // SET_COLOR(gameState.renderer,(Color){0xFF0000});
-    // SDL_RenderFillRect(gameState.renderer,tempRect);
-
-    SDL_RenderCopy(gameState.renderer,testObject->spriteTexture,NULL,testObject->bounds);
 
     SDL_RenderPresent(gameState.renderer);
 }
