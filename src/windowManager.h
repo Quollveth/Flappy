@@ -2,7 +2,6 @@
 #include <SDL2/SDL.h>
 #include "./dynamic_buffer.h"
 
-
 //prototypes for game functions, implemented in main.c
 void gameSetup();//called once, setup everything
 void gameInput(int key);//called every time a key is pressed
@@ -89,10 +88,9 @@ static void closeGame(bool error,enum err_types err_type){
             break;
     }
 
-
     full_quit:
     gameCleanup();
-    renderer:
+    //renderer:
     SDL_DestroyRenderer(gameState.renderer);
     window:
     SDL_DestroyWindow(gameState.window);
@@ -102,8 +100,8 @@ static void closeGame(bool error,enum err_types err_type){
     exit(error);
 }
 
-
 static void setup(){
+
     //read settings file in here, for now they are hardcoded
     gameSettings.TARG_FPS = 30;
     gameSettings.TARG_TT = 1000/gameSettings.TARG_FPS;
@@ -123,10 +121,13 @@ static void setup(){
 
     //initialize
     int initialization = initialize_window();
+
     if(!initialization) closeGame(true,initialization); //if something done fucked up stop now
 
     //let the game setup it's own stuff
     gameSetup();
+
+    gameState.isRunning = true;
 }
 
 static void process_input(){
@@ -149,6 +150,7 @@ static void process_input(){
 }
 
 static int update(){
+    // if we are ahead wait for a bit to keep the target fps
     int time_to_wait = gameSettings.TARG_TT - (SDL_GetTicks() - gameState.last_frame_time);
     if(time_to_wait > 0 && time_to_wait <= gameSettings.TARG_TT){
         SDL_Delay(time_to_wait);
@@ -161,10 +163,15 @@ static int update(){
 }
 
 static void render(){
-    SET_COLOR(gameState.renderer,(Color){0xFFFFFF});
+    //black screen
+    SET_COLOR(gameState.renderer,(Color){0x000000});
     SDL_RenderClear(gameState.renderer);
 
     //render game objects
+    for(int i=0;i<gameState.toDraw.len;i++){
+        //render gameState.toDraw[i] in here
+        
+    }
 
     SDL_RenderPresent(gameState.renderer);
 }

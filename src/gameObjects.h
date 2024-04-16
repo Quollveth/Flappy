@@ -18,5 +18,8 @@ typedef union {
 /**** gameObject UTILITIES ****/
 
 typedef struct gameObject{
-    int x;
+    int id;
+    SDL_Surface* sprite;
+    SDL_Rect* bounds;
 }gameObject;
+
