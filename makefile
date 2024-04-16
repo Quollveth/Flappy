@@ -1,8 +1,8 @@
 build:
-	gcc -Wall -std=c99 src/*.c -lSDL2 -o bin/main
+	gcc -Wall -std=c99 -g src/*.c -lSDL2 -o bin/main
 
 run:
 	./bin/main
 
 clean:
-	rm -f main
+	rm -f bin/main

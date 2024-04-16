@@ -36,6 +36,7 @@ enum err_types {
     SURFACE
 };
 
+gameObject* testObject;
 
 static int initialize_window() {
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
@@ -126,8 +127,12 @@ static void setup(){
 
     //let the game setup it's own stuff
     gameSetup();
-
     gameState.isRunning = true;
+
+    testObject = initializeObject(gameState.renderer,"./assets/placeholder.bmp");
+
+    testObject->bounds->x = 150;
+    testObject->bounds->y = 50;
 }
 
 static void process_input(){
@@ -170,8 +175,12 @@ static void render(){
     //render game objects
     for(int i=0;i<gameState.toDraw.len;i++){
         //render gameState.toDraw[i] in here
-        
     }
+
+    // SET_COLOR(gameState.renderer,(Color){0xFF0000});
+    // SDL_RenderFillRect(gameState.renderer,tempRect);
+
+    SDL_RenderCopy(gameState.renderer,testObject->spriteTexture,NULL,testObject->bounds);
 
     SDL_RenderPresent(gameState.renderer);
 }
