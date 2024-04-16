@@ -35,6 +35,29 @@ void dbRemove(struct dBuffer* db,int index){
     }
 }
 
+int dbRemoveById(struct dBuffer* db,int id){
+    //we can't use array indexing since objects can be added and removed arbitrarily
+    //a hash table would fix this, but it won't get complex enough to justify one
+    for(int i = 0;i < db->len;i++){
+        if(db->buffer[i]->id == id){
+            dbRemove(db,i);
+            return 0; //success
+        }
+    }
+    return 1; //could not find id
+} 
+
+gameObject* getObject(struct dBuffer* db,int id){
+    //we can't use array indexing since objects can be added and removed arbitrarily
+    //a hash table would fix this, but it won't get complex enough to justify one
+    for(int i = 0;i < db->len;i++){
+        if(db->buffer[i]->id == id){
+            return db->buffer[i];
+        }
+    }
+    return NULL; //could not find id
+}
+
 inline void dbFree(struct dBuffer* db){
     free(db->buffer);
     //objects themselves are not freed as this is only a reference, managing the objects memory is left to the game code itself

@@ -36,9 +36,6 @@ enum err_types {
     SURFACE
 };
 
-gameObject* testObject;
-gameObject* testObject2;
-
 static int initialize_window() {
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
         return (enum err_types)SDL_INIT;
@@ -92,7 +89,11 @@ static void closeGame(bool error,enum err_types err_type){
 
     full_quit:
     gameCleanup();
-    //renderer:
+    //cleanup gameObjects
+    for(int i=0;i<gameState.toDraw.len;i++){
+        if(gameState.toDraw.buffer != NULL) free(gameState.toDraw.buffer);
+    }
+
     SDL_DestroyRenderer(gameState.renderer);
     window:
     SDL_DestroyWindow(gameState.window);
@@ -129,15 +130,6 @@ static void setup(){
     //let the game setup it's own stuff
     gameSetup();
     gameState.isRunning = true;
-
-    testObject = initializeObject(gameState.renderer,"./assets/placeholder.bmp");
-    testObject2 = initializeObject(gameState.renderer,"./assets/placeholder.bmp");
-
-    testObject->bounds->x = 300;
-    testObject->bounds->y = 300;
-
-    dbAppend(&gameState.toDraw,testObject);
-    dbAppend(&gameState.toDraw,testObject2);
 }
 
 static void process_input(){
@@ -198,4 +190,13 @@ int main() {
 
     closeGame(false,NONE);
     return 0;
+}
+
+inline gameObject* createGameObject(char* spritePath){
+    gameObject* newObj = initializeObject(gameState.renderer,spritePath);
+    if(newObj == NULL) return NULL;
+}
+
+inline void destroyGameObject(int id){
+    dbRemoveById(&gameState.toDraw,id);
 }
