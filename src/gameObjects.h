@@ -75,3 +75,8 @@ gameObject* initializeObject(SDL_Renderer* target, char* spritePath){
 
     return obj;    
 }
+
+void resizeObject(gameObject* obj,int w, int h){
+    obj->bounds->h = h;
+    obj->bounds->w = w;
+}

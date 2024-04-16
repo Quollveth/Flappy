@@ -1,9 +1,13 @@
 #include <SDL2/SDL.h>
 #include "./windowManager.h"
 
+gameObject* testObject;
+
 void gameSetup(){
     //called once, setup everything
+    testObject = createGameObject("./assets/placeholder.bmp");
 
+    resizeObject(testObject,200,300);
 }
 
 void gameInput(int key){

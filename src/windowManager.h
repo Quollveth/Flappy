@@ -192,11 +192,13 @@ int main() {
     return 0;
 }
 
-inline gameObject* createGameObject(char* spritePath){
+gameObject* createGameObject(char* spritePath){
     gameObject* newObj = initializeObject(gameState.renderer,spritePath);
     if(newObj == NULL) return NULL;
+    dbAppend(&gameState.toDraw,newObj);
+    return newObj;
 }
 
-inline void destroyGameObject(int id){
+void destroyGameObject(int id){
     dbRemoveById(&gameState.toDraw,id);
 }
