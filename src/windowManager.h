@@ -3,7 +3,7 @@
 #include "./dynamic_buffer.h"
 
 //prototypes for game functions, implemented in main.c
-void gameSetup();//called once, setup everything
+int gameSetup();//called once, setup everything, return 1 for failure
 void gameInput(int key);//called every time a key is pressed
 int gameLogic(float delta_time);//called every frame, return 1 to stop game 0 to continue
 void gameCleanup();//called once, cleanup everything
@@ -127,9 +127,8 @@ static void setup(){
 
     if(!initialization) closeGame(true,initialization); //if something done fucked up stop now
 
-    //let the game setup it's own stuff
-    gameSetup();
-    gameState.isRunning = true;
+    //let the game setup it's own stuff    
+    gameState.isRunning = !gameSetup(); //returns 1 on failure
 }
 
 static void process_input(){
