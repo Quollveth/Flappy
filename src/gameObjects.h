@@ -23,6 +23,9 @@ typedef struct gameObject{
     SDL_Surface* spriteSurface;
     SDL_Texture* spriteTexture;
     SDL_Rect* bounds;
+    SDL_RendererFlip flipped;
+    double angle;
+    //center does not need to be defined, SDL_RenderCopyEx default value is good enough
 }gameObject;
 
 void destroyObject(gameObject* obj){
@@ -64,6 +67,9 @@ gameObject* initializeObject(SDL_Renderer* target, char* spritePath){
         free(obj);
         return NULL;
     }
+
+    obj->flipped = SDL_FLIP_NONE;
+    obj->angle = 0.0;
 
     obj->bounds->x = 0;
     obj->bounds->y = 0;

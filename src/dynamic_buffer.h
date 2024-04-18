@@ -7,7 +7,7 @@ struct dBuffer{
     size_t len;
 };
 
-#define DBUF_INIT {NULL,0}
+#define DBUF_INIT (struct dBuffer){NULL,0}
 
 int dbAppend(struct dBuffer* db,gameObject *item){
     if(item == NULL) return 1;

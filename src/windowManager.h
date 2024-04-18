@@ -9,7 +9,7 @@ int gameLogic(float delta_time);//called every frame, return 1 to stop game 0 to
 void gameCleanup();//called once, cleanup everything
 
 
-static struct {
+struct {
     int WIN_HEIGHT;
     int WIN_WIDTH;
     int TARG_FPS;
@@ -90,9 +90,9 @@ static void closeGame(bool error,enum err_types err_type){
     full_quit:
     gameCleanup();
     //cleanup gameObjects
-    for(int i=0;i<gameState.toDraw.len;i++){
-        if(gameState.toDraw.buffer != NULL) free(gameState.toDraw.buffer);
-    }
+    //for(int i=0;i<gameState.toDraw.len;i++){
+    //    if(gameState.toDraw.buffer != NULL) free(gameState.toDraw.buffer);
+    //}
 
     SDL_DestroyRenderer(gameState.renderer);
     window:
@@ -119,8 +119,7 @@ static void setup(){
     gameState.isRunning = false;
     gameState.last_frame_time = 0;
 
-    gameState.toDraw.buffer = NULL;
-    gameState.toDraw.len = 0;
+    gameState.toDraw = DBUF_INIT;
 
     //initialize
     int initialization = initialize_window();
@@ -170,7 +169,15 @@ static void render(){
 
     //render game objects
     for(int i=0;i<gameState.toDraw.len;i++){
-        SDL_RenderCopy(gameState.renderer,gameState.toDraw.buffer[i]->spriteTexture,NULL,gameState.toDraw.buffer[i]->bounds);
+        SDL_RenderCopyEx(
+            gameState.renderer, //renderer
+            gameState.toDraw.buffer[i]->spriteTexture, //texture
+            NULL, //source rectangle
+            gameState.toDraw.buffer[i]->bounds, //destination rectangle
+            gameState.toDraw.buffer[i]->angle, //angle
+            NULL, //center, default value is good enough
+            gameState.toDraw.buffer[i]->flipped //flip action
+        );
     }
 
     SDL_RenderPresent(gameState.renderer);
