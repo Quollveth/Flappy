@@ -8,6 +8,7 @@ void gameInput(int key);//called every time a key is pressed
 int gameLogic(float delta_time);//called every frame, return 1 to stop game 0 to continue
 void gameCleanup();//called once, cleanup everything
 
+void debugRender(SDL_Renderer* aaa);
 
 struct {
     int WIN_HEIGHT;
@@ -169,6 +170,7 @@ static void render(){
 
     //render game objects
     for(int i=0;i<gameState.toDraw.len;i++){
+
         SDL_RenderCopyEx(
             gameState.renderer, //renderer
             gameState.toDraw.buffer[i]->spriteTexture, //texture
@@ -179,6 +181,8 @@ static void render(){
             gameState.toDraw.buffer[i]->flipped //flip action
         );
     }
+
+    //debugRender(gameState.renderer);
 
     SDL_RenderPresent(gameState.renderer);
 }

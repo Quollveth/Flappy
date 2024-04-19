@@ -22,6 +22,19 @@ typedef struct pipe{
 gameObject* bird = NULL;
 Pipe* pipes[4]; //pipes wrap around so we don't need more
 
+Pipe* test;
+
+void debugRender(SDL_Renderer* aaa){
+    SDL_SetRenderDrawColor(aaa, 255, 0, 0, 255);
+    SDL_RenderFillRect(aaa,&test->boundsB);
+
+    SDL_SetRenderDrawColor(aaa, 0, 255, 0, 255);
+    SDL_RenderFillRect(aaa,&test->boundsT);
+
+    SDL_SetRenderDrawColor(aaa, 0, 0, 255, 255);
+    SDL_RenderFillRect(aaa,bird->bounds);
+}
+
 
 Pipe* createPipe(int gap){
     Pipe* pipe = malloc(sizeof(Pipe));
@@ -75,8 +88,11 @@ Pipe* createPipe(int gap){
     pipe->boundsB.w = 50;
     pipe->boundsT.w = 50;
 
-    pipe->boundsT.h = gap - 200;
+    pipe->boundsB.y = gap;
     pipe->boundsB.h = gameSettings.WIN_HEIGHT - gap;
+    
+    pipe->boundsT.y = 0;
+    pipe->boundsT.h = gap - 150;
 
     return pipe;
 }
@@ -91,8 +107,6 @@ void movePipe(Pipe** pipe,int by){
     }
 }
 
-Pipe* test;
-
 int gameSetup(){
     //called once, setup everything, return 1 for failure
 
@@ -101,6 +115,7 @@ int gameSetup(){
 
     resizeObject(bird,50,35);
     bird->bounds->x = 100;
+    bird->bounds->y = 150;
 
     test = createPipe(300);
 
@@ -120,7 +135,7 @@ void gameInput(int key){
 int gameLogic(float delta_time){
     //called every frame, return 1 to stop game 0 to continue
 
-    bird->bounds->y += 150 * delta_time;
+    //bird->bounds->y += 150 * delta_time;
 
     return 0;
 }
