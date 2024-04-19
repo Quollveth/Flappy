@@ -2,13 +2,13 @@
 #include <SDL2/SDL.h>
 #include "./dynamic_buffer.h"
 
+//#define RENDER_DEBUG
+
 //prototypes for game functions, implemented in main.c
 int gameSetup();//called once, setup everything, return 1 for failure
 void gameInput(int key);//called every time a key is pressed
 int gameLogic(float delta_time);//called every frame, return 1 to stop game 0 to continue
 void gameCleanup();//called once, cleanup everything
-
-void debugRender(SDL_Renderer* aaa);
 
 struct {
     int WIN_HEIGHT;
@@ -171,6 +171,8 @@ static void render(){
     //render game objects
     for(int i=0;i<gameState.toDraw.len;i++){
 
+        #ifndef RENDER_DEBUG
+
         SDL_RenderCopyEx(
             gameState.renderer, //renderer
             gameState.toDraw.buffer[i]->spriteTexture, //texture
@@ -180,9 +182,14 @@ static void render(){
             NULL, //center, default value is good enough
             gameState.toDraw.buffer[i]->flipped //flip action
         );
-    }
 
-    //debugRender(gameState.renderer);
+        #else
+
+        SDL_SetRenderDrawColor(gameState.renderer, 0, 0, 255, 255);
+        SDL_RenderFillRect(gameState.renderer,gameState.toDraw.buffer[i]->bounds);
+
+        #endif
+    }
 
     SDL_RenderPresent(gameState.renderer);
 }
