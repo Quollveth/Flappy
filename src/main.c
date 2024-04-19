@@ -1,3 +1,5 @@
+#include <time.h>
+#include <stdlib.h>
 #include <SDL2/SDL.h>
 #include "./windowManager.h"
 
@@ -20,9 +22,13 @@ typedef struct pipe{
 
 //game objects are globals
 gameObject* bird = NULL;
-Pipe* pipes[4]; //pipes wrap around so we don't need more
-
 Pipe* test;
+int maxPipes;
+
+Pipe* *pipes; //would be pipes[maxPipes] but that value is dependent on the screen size
+
+#define PIPE_DISTANCE 400 //distance between pipes
+#define PIPE_GAP 200 //gap between top and bottom pipe
 
 void debugRender(SDL_Renderer* aaa){
     SDL_SetRenderDrawColor(aaa, 255, 0, 0, 255);
@@ -34,7 +40,6 @@ void debugRender(SDL_Renderer* aaa){
     SDL_SetRenderDrawColor(aaa, 0, 0, 255, 255);
     SDL_RenderFillRect(aaa,bird->bounds);
 }
-
 
 Pipe* createPipe(int gap){
     Pipe* pipe = malloc(sizeof(Pipe));
@@ -68,12 +73,12 @@ Pipe* createPipe(int gap){
     gameObject* pipeEndTp = createGameObject(pipeEndAsset);
     if(pipeEndTp == NULL) return NULL;
     resizeObject(pipeEndTp,50,50);
-    pipeEndTp->bounds->y = gap-200;
+    pipeEndTp->bounds->y = gap - PIPE_GAP;
     pipeEndTp->flipped = SDL_FLIP_VERTICAL;
 
     dbAppend(&pipe->segments,pipeEndTp);
 
-    for(int i=gap-250;i>= 0;i-=50){
+    for(int i=gap - 50 - PIPE_GAP;i>= 0;i-=50){
         gameObject* newSegment = createGameObject(pipeMiddleAsset);
         if(newSegment == NULL){
             //destroy pipe
@@ -97,6 +102,10 @@ Pipe* createPipe(int gap){
     return pipe;
 }
 
+void destroyPipe(Pipe** pipe){
+
+}
+
 void movePipe(Pipe** pipe,int by){
     //goes through every segment and sets their position
     (*pipe)->boundsB.x += by;
@@ -109,6 +118,15 @@ void movePipe(Pipe** pipe,int by){
 
 int gameSetup(){
     //called once, setup everything, return 1 for failure
+    maxPipes = gameSettings.WIN_WIDTH/PIPE_DISTANCE + 1;
+    pipes = malloc(maxPipes * sizeof(Pipe*));
+
+    srand(time(NULL));
+
+    for(int i=0;i<maxPipes;i++){
+        pipes[i] = createPipe(300);
+        movePipe(&pipes[i],gameSettings.WIN_WIDTH + i*PIPE_DISTANCE);
+    }
 
     bird = createGameObject(birdAsset);
     if(bird == NULL) return 1;
@@ -116,10 +134,6 @@ int gameSetup(){
     resizeObject(bird,50,35);
     bird->bounds->x = 100;
     bird->bounds->y = 150;
-
-    test = createPipe(300);
-
-    movePipe(&test,150);
 
     return 0;
 }
@@ -136,6 +150,20 @@ int gameLogic(float delta_time){
     //called every frame, return 1 to stop game 0 to continue
 
     //bird->bounds->y += 150 * delta_time;
+
+    
+    for(int i=0;i<maxPipes;i++){
+        movePipe(&pipes[i],-200*delta_time);
+        if(pipes[i]->boundsB.x < 150 && pipes[i]->boundsB.x > 100){
+            //detect collision
+        }
+        if(pipes[i]->boundsB.x < -50){
+            destroyPipe(&pipes[i]);
+            pipes[i] = createPipe(300);
+            movePipe(&pipes[i],gameSettings.WIN_WIDTH + 50);
+        }
+    }
+
 
     return 0;
 }
