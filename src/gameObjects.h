@@ -23,30 +23,25 @@ typedef union {
 typedef struct {
     SDL_Surface* spriteSurface;
     SDL_Texture* spriteTexture;
-    SDL_Rect* bounds;
 } Sprite;
+
+typedef struct{
+    Sprite* sprite; //reference only, multiple objects may reference the same sprite
+    SDL_Rect* bounds; //relative to object bounds, used to position it on screen
+} ObjectPart;
 
 typedef struct {
     int id;
-    Sprite* sprites[MAX_PIECES];
-    SDL_Rect* bounds;
-    bool flipHorizontal;
-    int spriteCount;
+    ObjectPart* parts[MAX_PIECES];
+    int partCount;
+    SDL_Rect* bounds; //object bound, used for collision checking and placing all the sprites, can be different from the actual drawn bounds
+    bool flipHorizontal; //more than that is too much of a headache, i may do it later when i'm in the mood for linear algebra
 }GameObject;
-
-void destroyObject(GameObject* obj){
-    if(obj == NULL) return;
-    
-
-    free(obj->bounds);
-    free(obj);
-}
 
 void destroySprite(Sprite* spr){
     if(spr == NULL) return;
     if(spr->spriteTexture != NULL) SDL_DestroyTexture(spr->spriteTexture);
     if(spr->spriteSurface != NULL) SDL_FreeSurface(spr->spriteSurface);
-    if(spr->bounds != NULL) free(spr->bounds);
     free(spr);
 }
 
@@ -72,20 +67,21 @@ Sprite* initializeSprite(SDL_Renderer* target, char* spritePath){
         //TODO: Proper error handling
     }
 
-    newSprite->bounds = malloc(sizeof(SDL_Rect));
-    if(newSprite->bounds == NULL){
-        destroySprite(newSprite);
-        return NULL;
-        //TODO: Proper error handling
-    }
-
-    newSprite->bounds->h = newSprite->spriteSurface->h;
-    newSprite->bounds->w = newSprite->spriteSurface->w;
-
-    newSprite->bounds->x = 0;
-    newSprite->bounds->y = 0;
-
     return newSprite;
+}
+
+void destroyObject(GameObject* obj){
+    if(obj == NULL) return;
+    if(obj->bounds != NULL) free(obj->bounds);
+    if(obj->partCount > 0){
+        for(int i=0;i<obj->partCount;i++){
+            if(obj->parts[i] == NULL) continue;
+            free(obj->parts[i]->bounds);
+            //sprites are only referenced, the same sprite may be used by multiple objects so they are not freed here
+            obj->parts[i] = NULL;
+        }
+    }
+    free(obj);
 }
 
 GameObject* initializeObject(SDL_Renderer* target){
@@ -93,7 +89,7 @@ GameObject* initializeObject(SDL_Renderer* target){
 
     GameObject* obj = malloc(sizeof(GameObject));
     if(obj == NULL) return NULL;
-
+    //TODO: Proper error handling
     obj->bounds = NULL;
 
     obj->bounds = malloc(sizeof(SDL_Rect));
@@ -102,17 +98,14 @@ GameObject* initializeObject(SDL_Renderer* target){
         return NULL;
     }
 
-    obj->bounds->x = 0;
-    obj->bounds->y = 0;
-    obj->bounds->h = 0;
-    obj->bounds->w = 0;
+    *obj->bounds = (SDL_Rect){0,0,0,0};
 
     obj->flipHorizontal = false;
 
     for(int i=0;i<MAX_PIECES;i++){
-        obj->sprites[i] = NULL;
+        obj->parts[i] = NULL;
     }
-    obj->spriteCount = 0;
+    obj->partCount = 0;
 
     obj->id = id;
     id++;
@@ -120,20 +113,27 @@ GameObject* initializeObject(SDL_Renderer* target){
     return obj;    
 }
 
-void addSpriteToObject(SDL_Renderer* target,GameObject* obj,char* spritePath,int x, int y){
-    Sprite* newSprite = initializeSprite(target,spritePath);
-    if(newSprite == NULL) return;
+int addObjectPart(SDL_Renderer* target,GameObject* obj,Sprite* sprite,int xOffset, int yOffset,int spriteHeight, int spriteWidth){
+    if(sprite == NULL) return 1;
 
-    if(obj->spriteCount != 0){
-        newSprite->bounds->x += x;
-        newSprite->bounds->y += y;
+    ObjectPart* newPart = malloc(sizeof(ObjectPart));
+    if(newPart == NULL) return 1;
+    //TODO: Proper error handling
+    newPart->bounds = malloc(sizeof(SDL_Rect));
+    if(newPart->bounds == NULL){
+        free(newPart);
+        return 1;
     }
 
-    obj->sprites[obj->spriteCount] = newSprite;
-    obj->spriteCount++;
-}
+    newPart->sprite = sprite;
 
-void resizeObject(GameObject* obj,int w, int h){
-    obj->bounds->h = h;
-    obj->bounds->w = w;
+    newPart->bounds->x = obj->bounds->x + xOffset;
+    newPart->bounds->x = obj->bounds->y + yOffset;
+
+    newPart->bounds->h = spriteHeight;
+    newPart->bounds->w = spriteWidth;
+
+    obj->parts[obj->partCount] = newPart;
+
+    return 0;
 }

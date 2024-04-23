@@ -2,7 +2,7 @@
 #include <SDL2/SDL.h>
 #include "./dynamic_buffer.h"
 
-#define RENDER_DEBUG
+//#define RENDER_DEBUG
 
 //prototypes for game functions, implemented in main.c
 int gameSetup();//called once, setup everything, return 1 for failure
@@ -27,7 +27,6 @@ static struct {
 
     struct dBuffer toDraw; //all game objects that need to be drawn
 } gameState;
-
 
 enum err_types {
     NONE,
@@ -168,17 +167,20 @@ static void render(){
     SET_COLOR(gameState.renderer,(Color){0x000000});
     SDL_RenderClear(gameState.renderer);
 
+    SDL_RenderPresent(gameState.renderer);
+    return;
+
     //render game objects
     for(int i=0;i<gameState.toDraw.len;i++){
-        for(int j=0;j < gameState.toDraw.buffer[i]->spriteCount; j++){
+        for(int j=0;j < gameState.toDraw.buffer[i]->partCount; j++){
 
         #ifndef RENDER_DEBUG
 
         SDL_RenderCopyEx(
             gameState.renderer,
-            gameState.toDraw.buffer[i]->sprites[j]->spriteTexture,
+            gameState.toDraw.buffer[i]->parts[j]->sprite->spriteTexture,
             NULL,
-            gameState.toDraw.buffer[i]->sprites[j]->bounds,
+            gameState.toDraw.buffer[i]->parts[j]->bounds,
             0,
             NULL,
             (gameState.toDraw.buffer[i]->flipHorizontal)?SDL_FLIP_HORIZONTAL:SDL_FLIP_NONE
@@ -188,7 +190,7 @@ static void render(){
         SET_COLOR(gameState.renderer,(Color){0xFF00FF});
         SDL_RenderFillRect(
             gameState.renderer,
-            gameState.toDraw.buffer[i]->sprites[j]->bounds
+            gameState.toDraw.buffer[i]->parts[j]->bounds
         );
 
         #endif
@@ -197,6 +199,32 @@ static void render(){
 
     SDL_RenderPresent(gameState.renderer);
 }
+
+Sprite* loadSprite(char* path){
+    Sprite* newSprite = initializeSprite(gameState.renderer,path);
+    if(newSprite == NULL) return NULL;
+    //TODO: Proper error handling
+
+    return newSprite;
+}
+
+GameObject* createGameObject(Sprite* firstPart){
+    GameObject* newObj = initializeObject(gameState.renderer);
+    if(newObj == NULL) return NULL;
+
+    if(firstPart != NULL){
+        
+    }
+
+    dbAppend(&gameState.toDraw,newObj);
+    return newObj;
+}
+
+void destroyGameObject(int id){
+    dbRemoveById(&gameState.toDraw,id);
+}
+
+
 
 int main() {
     setup();
@@ -211,18 +239,4 @@ int main() {
 
     closeGame(false,NONE);
     return 0;
-}
-
-GameObject* createGameObject(char* spritePath){
-    GameObject* newObj = initializeObject(gameState.renderer);
-    if(newObj == NULL) return NULL;
-
-    addSpriteToObject(gameState.renderer,newObj,spritePath,0,0);
-
-    dbAppend(&gameState.toDraw,newObj);
-    return newObj;
-}
-
-void destroyGameObject(int id){
-    dbRemoveById(&gameState.toDraw,id);
 }
