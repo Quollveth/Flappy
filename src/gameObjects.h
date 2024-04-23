@@ -16,7 +16,7 @@ typedef union {
 #define SET_COLOR(sdlRender, color) SDL_SetRenderDrawColor(sdlRender, color.b, color.g, color.r, 255)
 
 
-/**** GameObject UTILITIES ****/
+/**** OBJECT UTILITIES ****/
 
 #define MAX_PIECES 16 //max number of sprites per object
 
@@ -37,6 +37,8 @@ typedef struct {
     SDL_Rect* bounds; //object bound, used for collision checking and placing all the sprites, can be different from the actual drawn bounds
     bool flipHorizontal; //more than that is too much of a headache, i may do it later when i'm in the mood for linear algebra
 }GameObject;
+
+/* SPRITE HANDLING */
 
 void destroySprite(Sprite* spr){
     if(spr == NULL) return;
@@ -69,6 +71,8 @@ Sprite* initializeSprite(SDL_Renderer* target, char* spritePath){
 
     return newSprite;
 }
+
+/* OBJECT HANDLING */
 
 void destroyObject(GameObject* obj){
     if(obj == NULL) return;
@@ -113,6 +117,19 @@ GameObject* initializeObject(SDL_Renderer* target){
     return obj;    
 }
 
+
+/**
+ * Adds a part to a game object.
+ *
+ * @param target The renderer to render the game object.
+ * @param obj The game object to add the part to.
+ * @param sprite The sprite to use for the part.
+ * @param xOffset The x offset of the part relative to the game object's position.
+ * @param yOffset The y offset of the part relative to the game object's position.
+ * @param spriteHeight The height of the sprite.
+ * @param spriteWidth The width of the sprite.
+ * @return Returns 0 on success, 1 on failure.
+ */
 int addObjectPart(SDL_Renderer* target,GameObject* obj,Sprite* sprite,int xOffset, int yOffset,int spriteHeight, int spriteWidth){
     if(sprite == NULL) return 1;
 
@@ -128,12 +145,13 @@ int addObjectPart(SDL_Renderer* target,GameObject* obj,Sprite* sprite,int xOffse
     newPart->sprite = sprite;
 
     newPart->bounds->x = obj->bounds->x + xOffset;
-    newPart->bounds->x = obj->bounds->y + yOffset;
+    newPart->bounds->y = obj->bounds->y + yOffset;
 
     newPart->bounds->h = spriteHeight;
     newPart->bounds->w = spriteWidth;
 
     obj->parts[obj->partCount] = newPart;
+    obj->partCount++;
 
     return 0;
 }

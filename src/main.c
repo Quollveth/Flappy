@@ -16,8 +16,8 @@
 
 int gameSetup(){
     //called once, setup everything, return 1 for failure
-
-    GameObject* bird = createGameObject(NULL);
+    Sprite* birdSprite = loadSprite(birdAsset);
+    GameObject* bird = createGameObject(birdSprite,50,35);
 
     return 0;
 }

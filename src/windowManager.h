@@ -167,13 +167,9 @@ static void render(){
     SET_COLOR(gameState.renderer,(Color){0x000000});
     SDL_RenderClear(gameState.renderer);
 
-    SDL_RenderPresent(gameState.renderer);
-    return;
-
     //render game objects
-    for(int i=0;i<gameState.toDraw.len;i++){
+    for(int i=0;i < gameState.toDraw.len;i++){
         for(int j=0;j < gameState.toDraw.buffer[i]->partCount; j++){
-
         #ifndef RENDER_DEBUG
 
         SDL_RenderCopyEx(
@@ -181,9 +177,9 @@ static void render(){
             gameState.toDraw.buffer[i]->parts[j]->sprite->spriteTexture,
             NULL,
             gameState.toDraw.buffer[i]->parts[j]->bounds,
-            0,
+            0.0,
             NULL,
-            (gameState.toDraw.buffer[i]->flipHorizontal)?SDL_FLIP_HORIZONTAL:SDL_FLIP_NONE
+            gameState.toDraw.buffer[i]->flipHorizontal?SDL_FLIP_HORIZONTAL:SDL_FLIP_NONE
         );
 
         #else
@@ -208,12 +204,20 @@ Sprite* loadSprite(char* path){
     return newSprite;
 }
 
-GameObject* createGameObject(Sprite* firstPart){
+GameObject* createGameObject(Sprite* firstPart,int w,int h){
     GameObject* newObj = initializeObject(gameState.renderer);
     if(newObj == NULL) return NULL;
 
     if(firstPart != NULL){
-        
+        addObjectPart(
+            gameState.renderer,
+            newObj,
+            firstPart,
+            0,
+            0,
+            h,
+            w
+        );
     }
 
     dbAppend(&gameState.toDraw,newObj);
