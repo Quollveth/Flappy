@@ -170,19 +170,29 @@ static void render(){
 
     //render game objects
     for(int i=0;i<gameState.toDraw.len;i++){
+        for(int j=0;j < gameState.toDraw.buffer[i]->spriteCount; j++){
 
         #ifndef RENDER_DEBUG
 
         SDL_RenderCopyEx(
-            gameState.renderer, //renderer
+            gameState.renderer,
+            gameState.toDraw.buffer[i]->sprites[j]->spriteTexture,
+            NULL,
+            gameState.toDraw.buffer[i]->sprites[j]->bounds,
+            0,
+            NULL,
+            (gameState.toDraw.buffer[i]->flipHorizontal)?SDL_FLIP_HORIZONTAL:SDL_FLIP_NONE
         );
 
         #else
-
-        //SDL_SetRenderDrawColor(gameState.renderer, 0, 0, 255, 255);
-        //SDL_RenderFillRect(gameState.renderer,gameState.toDraw.buffer[i]->bounds);
+        SET_COLOR(gameState.renderer,(Color){0xFF00FF});
+        SDL_RenderFillRect(
+            gameState.renderer,
+            gameState.toDraw.buffer[i]->sprites[j]->bounds
+        );
 
         #endif
+        }
     }
 
     SDL_RenderPresent(gameState.renderer);
