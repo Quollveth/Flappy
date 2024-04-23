@@ -17,7 +17,26 @@
 int gameSetup(){
     //called once, setup everything, return 1 for failure
     Sprite* birdSprite = loadSprite(birdAsset);
+    Sprite* pipeEndSprite = loadSprite(pipeEndAsset);
+    Sprite* pipeMiddleSprite = loadSprite(pipeMiddleAsset);
+
     GameObject* bird = createGameObject(birdSprite,50,35);
+    moveSimpleObject(bird,150,50);
+
+    GameObject* pipe = createGameObject(pipeEndSprite,50,50);
+
+    for(int i=1;i<=5;i++){
+        buildGameObject(
+        pipe,
+        pipeMiddleSprite,
+        0,
+        50 * i,
+        50,
+        50
+        );
+    }
+
+    moveSplitObject(pipe,300,150);
 
     return 0;
 }
