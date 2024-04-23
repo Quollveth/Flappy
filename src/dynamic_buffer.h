@@ -2,17 +2,17 @@
 
 struct dBuffer{
     /* array of pointers
-    the toDraw buffer (declared in windowManager.h) contains a reference to every gameObject to be drawn, objects may need to be updated every frame so only a reference to it is stored */
-    gameObject* *buffer;
+    the toDraw buffer (declared in windowManager.h) contains a reference to every GameObject to be drawn, objects may need to be updated every frame so only a reference to it is stored */
+    GameObject* *buffer;
     size_t len;
 };
 
 #define DBUF_INIT (struct dBuffer){NULL,0}
 
-int dbAppend(struct dBuffer* db,gameObject *item){
+int dbAppend(struct dBuffer* db,GameObject *item){
     if(item == NULL) return 1;
 
-    gameObject **newBuffer = (gameObject**)realloc(db->buffer,sizeof(gameObject*) * db->len+1);
+    GameObject **newBuffer = (GameObject**)realloc(db->buffer,sizeof(GameObject*) * db->len+1);
     if(newBuffer == NULL) return 1;
 
     db->buffer = newBuffer;
@@ -28,7 +28,7 @@ void dbRemove(struct dBuffer* db,int index){
             db->buffer[i] = db->buffer[i + 1];
         }
         db->len--;
-        gameObject **newBuffer = (gameObject**)realloc(db->buffer, sizeof(gameObject) * db->len);
+        GameObject **newBuffer = (GameObject**)realloc(db->buffer, sizeof(GameObject) * db->len);
         if (newBuffer != NULL) {
             db->buffer = newBuffer;
         }
@@ -47,7 +47,7 @@ int dbRemoveById(struct dBuffer* db,int id){
     return 1; //could not find id
 } 
 
-gameObject* getObject(struct dBuffer* db,int id){
+GameObject* getObject(struct dBuffer* db,int id){
     //we can't use array indexing since objects can be added and removed arbitrarily
     //a hash table would fix this, but it won't get complex enough to justify one
     for(int i = 0;i < db->len;i++){

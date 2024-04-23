@@ -175,18 +175,12 @@ static void render(){
 
         SDL_RenderCopyEx(
             gameState.renderer, //renderer
-            gameState.toDraw.buffer[i]->spriteTexture, //texture
-            NULL, //source rectangle
-            gameState.toDraw.buffer[i]->bounds, //destination rectangle
-            gameState.toDraw.buffer[i]->angle, //angle
-            NULL, //center, default value is good enough
-            gameState.toDraw.buffer[i]->flipped //flip action
         );
 
         #else
 
-        SDL_SetRenderDrawColor(gameState.renderer, 0, 0, 255, 255);
-        SDL_RenderFillRect(gameState.renderer,gameState.toDraw.buffer[i]->bounds);
+        //SDL_SetRenderDrawColor(gameState.renderer, 0, 0, 255, 255);
+        //SDL_RenderFillRect(gameState.renderer,gameState.toDraw.buffer[i]->bounds);
 
         #endif
     }
@@ -209,9 +203,12 @@ int main() {
     return 0;
 }
 
-gameObject* createGameObject(char* spritePath){
-    gameObject* newObj = initializeObject(gameState.renderer,spritePath);
+GameObject* createGameObject(char* spritePath){
+    GameObject* newObj = initializeObject(gameState.renderer);
     if(newObj == NULL) return NULL;
+
+    addSpriteToObject(gameState.renderer,newObj,spritePath,0,0);
+
     dbAppend(&gameState.toDraw,newObj);
     return newObj;
 }

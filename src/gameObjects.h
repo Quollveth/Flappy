@@ -16,65 +16,103 @@ typedef union {
 #define SET_COLOR(sdlRender, color) SDL_SetRenderDrawColor(sdlRender, color.b, color.g, color.r, 255)
 
 
-/**** gameObject UTILITIES ****/
+/**** GameObject UTILITIES ****/
 
-typedef struct gameObject{
-    int id;
+#define MAX_PIECES 16 //max number of sprites per object
+
+typedef struct {
     SDL_Surface* spriteSurface;
     SDL_Texture* spriteTexture;
     SDL_Rect* bounds;
-    SDL_RendererFlip flipped;
-    double angle;
-    //center does not need to be defined, SDL_RenderCopyEx default value is good enough
-}gameObject;
+} Sprite;
 
-void destroyObject(gameObject* obj){
+typedef struct {
+    int id;
+    Sprite* sprites[MAX_PIECES];
+    SDL_Rect* bounds;
+    bool flipHorizontal;
+    int spriteCount;
+}GameObject;
+
+void destroyObject(GameObject* obj){
     if(obj == NULL) return;
+    
 
     free(obj->bounds);
-    SDL_DestroyTexture(obj->spriteTexture);
-    SDL_FreeSurface(obj->spriteSurface);
     free(obj);
 }
 
-gameObject* initializeObject(SDL_Renderer* target, char* spritePath){
+void destroySprite(Sprite* spr){
+    if(spr == NULL) return;
+    if(spr->spriteTexture != NULL) SDL_DestroyTexture(spr->spriteTexture);
+    if(spr->spriteSurface != NULL) SDL_FreeSurface(spr->spriteSurface);
+    if(spr->bounds != NULL) free(spr->bounds);
+    free(spr);
+}
+
+Sprite* initializeSprite(SDL_Renderer* target, char* spritePath){
+    Sprite* newSprite = malloc(sizeof(Sprite));
+    if(newSprite == NULL) return NULL;
+    //TODO: Proper error handling
+
+    newSprite->spriteSurface = NULL;
+    newSprite->spriteTexture = NULL;
+
+    newSprite->spriteSurface = SDL_LoadBMP(spritePath);
+    if(newSprite->spriteSurface == NULL){
+        destroySprite(newSprite);
+        return NULL;
+        //TODO: Proper error handling
+    }
+
+    newSprite->spriteTexture = SDL_CreateTextureFromSurface(target,newSprite->spriteSurface);
+    if(newSprite->spriteTexture == NULL){
+        destroySprite(newSprite);
+        return NULL;
+        //TODO: Proper error handling
+    }
+
+    newSprite->bounds = malloc(sizeof(SDL_Rect));
+    if(newSprite->bounds == NULL){
+        destroySprite(newSprite);
+        return NULL;
+        //TODO: Proper error handling
+    }
+
+    newSprite->bounds->h = newSprite->spriteSurface->h;
+    newSprite->bounds->w = newSprite->spriteSurface->w;
+
+    newSprite->bounds->x = 0;
+    newSprite->bounds->y = 0;
+
+    return newSprite;
+}
+
+GameObject* initializeObject(SDL_Renderer* target){
     static int id = 1;
 
-    gameObject* obj = malloc(sizeof(gameObject));
+    GameObject* obj = malloc(sizeof(GameObject));
     if(obj == NULL) return NULL;
 
-    obj->spriteSurface = NULL;
-    obj->spriteTexture = NULL;
     obj->bounds = NULL;
-
-    obj->spriteSurface = SDL_LoadBMP(spritePath);
-    if(obj->spriteSurface == NULL){
-        free(obj);
-        return NULL;
-    }
-
-    obj->spriteTexture = SDL_CreateTextureFromSurface(target,obj->spriteSurface);
-    if(obj->spriteTexture == NULL){
-        SDL_FreeSurface(obj->spriteSurface);
-        free(obj);
-        return NULL;
-    }
 
     obj->bounds = malloc(sizeof(SDL_Rect));
     if(obj->bounds == NULL){
-        SDL_DestroyTexture(obj->spriteTexture);
-        SDL_FreeSurface(obj->spriteSurface);
         free(obj);
         return NULL;
     }
 
-    obj->flipped = SDL_FLIP_NONE;
-    obj->angle = 0.0;
-
     obj->bounds->x = 0;
     obj->bounds->y = 0;
-    obj->bounds->h = obj->spriteSurface->h;
-    obj->bounds->w = obj->spriteSurface->w;
+    obj->bounds->h = 0;
+    obj->bounds->w = 0;
+
+    obj->flipHorizontal = false;
+
+    for(int i=0;i<MAX_PIECES;i++){
+        obj->sprites[i] = NULL;
+    }
+    obj->spriteCount = 0;
 
     obj->id = id;
     id++;
@@ -82,7 +120,20 @@ gameObject* initializeObject(SDL_Renderer* target, char* spritePath){
     return obj;    
 }
 
-void resizeObject(gameObject* obj,int w, int h){
+void addSpriteToObject(SDL_Renderer* target,GameObject* obj,char* spritePath,int x, int y){
+    Sprite* newSprite = initializeSprite(target,spritePath);
+    if(newSprite == NULL) return;
+
+    if(obj->spriteCount != 0){
+        newSprite->bounds->x += x;
+        newSprite->bounds->y += y;
+    }
+
+    obj->sprites[obj->spriteCount] = newSprite;
+    obj->spriteCount++;
+}
+
+void resizeObject(GameObject* obj,int w, int h){
     obj->bounds->h = h;
     obj->bounds->w = w;
 }
