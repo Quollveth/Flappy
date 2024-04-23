@@ -117,19 +117,6 @@ GameObject* initializeObject(SDL_Renderer* target){
     return obj;    
 }
 
-
-/**
- * Adds a part to a game object.
- *
- * @param target The renderer to render the game object.
- * @param obj The game object to add the part to.
- * @param sprite The sprite to use for the part.
- * @param xOffset The x offset of the part relative to the game object's position.
- * @param yOffset The y offset of the part relative to the game object's position.
- * @param spriteHeight The height of the sprite.
- * @param spriteWidth The width of the sprite.
- * @return Returns 0 on success, 1 on failure.
- */
 int addObjectPart(SDL_Renderer* target,GameObject* obj,Sprite* sprite,int xOffset, int yOffset,int spriteHeight, int spriteWidth){
     if(sprite == NULL) return 1;
 
@@ -155,3 +142,4 @@ int addObjectPart(SDL_Renderer* target,GameObject* obj,Sprite* sprite,int xOffse
 
     return 0;
 }
+

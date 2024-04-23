@@ -204,6 +204,14 @@ Sprite* loadSprite(char* path){
     return newSprite;
 }
 
+/**
+ * Creates a new GameObject with the specified Sprite and dimensions.
+ *
+ * @param firstPart The Sprite for the first part of the GameObject.
+ * @param w The width of the GameObject.
+ * @param h The height of the GameObject.
+ * @return A pointer to the newly created GameObject, or NULL if an error occurred.
+ */
 GameObject* createGameObject(Sprite* firstPart,int w,int h){
     GameObject* newObj = initializeObject(gameState.renderer);
     if(newObj == NULL) return NULL;
@@ -224,11 +232,36 @@ GameObject* createGameObject(Sprite* firstPart,int w,int h){
     return newObj;
 }
 
+/**
+ * Adds a new part to a game object
+ * 
+ * @param obj The game object to add the part to.
+ * @param sprite The sprite to use for the part.
+ * @param xOffset The x offset of the part relative to the game object's position.
+ * @param yOffset The y offset of the part relative to the game object's position.
+ * @param spriteHeight The height of the sprite.
+ * @param spriteWidth The width of the sprite.
+ * @return Returns 0 on success, 1 on failure.
+**/
+int buildGameObject(GameObject* obj,Sprite* newPart,int xOffset, int yOffset,int spriteHeight, int spriteWidth){
+    if(obj == NULL) return 1;
+    if(newPart == NULL) return 1;
+    //TODO: Proper error handling
+
+    return addObjectPart(
+        gameState.renderer,
+        obj,
+        newPart,
+        xOffset,
+        yOffset,
+        spriteHeight,
+        spriteWidth
+    );
+}
+
 void destroyGameObject(int id){
     dbRemoveById(&gameState.toDraw,id);
 }
-
-
 
 int main() {
     setup();
