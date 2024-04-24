@@ -7,7 +7,7 @@
 //prototypes for game functions, implemented in main.c
 int gameSetup();//called once, setup everything, return 1 for failure
 void gameInput(int key);//called every time a key is pressed
-int gameLogic(float delta_time);//called every frame, return 1 to stop game 0 to continue
+int gameLogic(float delta_time);//called every frame, return 1 to quit game 0 to continue
 void gameCleanup();//called once, cleanup everything
 
 struct {
@@ -90,10 +90,13 @@ static void closeGame(bool error,enum err_types err_type){
     full_quit:
     gameCleanup();
     //cleanup gameObjects
-    //for(int i=0;i<gameState.toDraw.len;i++){
-    //    if(gameState.toDraw.buffer != NULL) free(gameState.toDraw.buffer);
-    //}
+    for(int i=0;i<gameState.toDraw.len;i++){
+        if(gameState.toDraw.buffer[i] == NULL) continue;
+        destroyObject(gameState.toDraw.buffer[i]);
+        gameState.toDraw.buffer[i] = NULL;
+    }
 
+    //labels are used for initialization errors only
     SDL_DestroyRenderer(gameState.renderer);
     window:
     SDL_DestroyWindow(gameState.window);
@@ -101,6 +104,8 @@ static void closeGame(bool error,enum err_types err_type){
     SDL_Quit();
     skip_all:
     exit(error);
+
+    //TODO: find what's leaking memory
 }
 
 static void setup(){
@@ -196,6 +201,13 @@ static void render(){
     SDL_RenderPresent(gameState.renderer);
 }
 
+
+/**
+ * Loads a sprite from the given file path.
+ *
+ * @param path The file path of the sprite image.
+ * @return A pointer to the loaded Sprite object, or NULL if an error occurred.
+ */
 Sprite* loadSprite(char* path){
     Sprite* newSprite = initializeSprite(gameState.renderer,path);
     if(newSprite == NULL) return NULL;
@@ -207,7 +219,7 @@ Sprite* loadSprite(char* path){
 /**
  * Creates a new GameObject with the specified Sprite and dimensions.
  *
- * @param firstPart The Sprite for the first part of the GameObject.
+ * @param firstPart The Sprite for the first part of the GameObject or NULL for invisible object
  * @param w The width of the GameObject.
  * @param h The height of the GameObject.
  * @return A pointer to the newly created GameObject, or NULL if an error occurred.
@@ -268,6 +280,7 @@ void destroyGameObject(GameObject* obj){
     destroyObject(obj);
 }
 
+//TODO: Move entry point somewhere that makes more sense
 int main() {
     setup();
 
