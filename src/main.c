@@ -8,16 +8,19 @@
 #define pipeMiddleAsset "./assets/pipe_middle.bmp"
 #define pipeEndAsset "./assets/pipe_end.bmp"
 
-Sprite* birdSprite;
-Sprite* pipeEndSprite;
-Sprite* pipeMiddleSprite;
-
 #define PIPE_DISTANCE 400 //distance between pipes
 #define PIPE_GAP 200 //gap between top and bottom pipe
 
-//game objects are globals
+
+//gamestate things for this file
+Sprite* birdSprite;
+Sprite* pipeEndSprite;
+Sprite* pipeMiddleSprite;
 GameObject* bird;
 GameObject* pipe;
+
+int maxPipeSegments; //how many segments are needed to fill the screen
+
 
 typedef struct {
     GameObject* top;
@@ -36,13 +39,14 @@ Pipe* createPipe(){
     // skip the gap distance
     // finish with the top pipe 
 
-    newPipe->top = createGameObject(pipeEndSprite,50,50);
-    int nPipes = randomNumber(8);
+    int nPipes = randomNumber(maxPipeSegments - 2); //2 extra for the ends
 
-    nPipes = 8;
+    //first the bottom one
+    newPipe->bottom = createGameObject(pipeEndSprite,50,50);
+    moveSimpleObject(newPipe->bottom,0,gameSettings.WIN_HEIGHT - ((nPipes+1)*50));
     for (int i = 1; i <= nPipes; i++) {
         buildGameObject(
-            newPipe->top,
+            newPipe->bottom,
             pipeMiddleSprite,
             0,
             50 * i, //add pipes above the end piece
@@ -50,16 +54,8 @@ Pipe* createPipe(){
             50
         );
     }
-    moveSplitObject(
-        newPipe->top,
-        0,
-        gameSettings.WIN_HEIGHT - ((nPipes+1)*50)
-    );
-
-
 
     newPipe->xPos = 0;
-
     return newPipe;
 }
 
@@ -71,8 +67,9 @@ int gameSetup(){
     pipeEndSprite = loadSprite(pipeEndAsset);
     pipeMiddleSprite = loadSprite(pipeMiddleAsset);
 
-    bird = createGameObject(birdSprite,50,35);
+    maxPipeSegments = (gameSettings.WIN_HEIGHT - PIPE_GAP)/50;
 
+    bird = createGameObject(birdSprite,50,35);
     moveSimpleObject(bird,500,50);
 
     createPipe();
