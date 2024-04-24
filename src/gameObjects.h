@@ -152,13 +152,13 @@ int addObjectPart(SDL_Renderer* target,GameObject* obj,Sprite* sprite,int xOffse
 * Moves an object with one or no sprites
 * Using on a multi part object will cause only first sprite to be moved while the others remain
 */
-void moveSimpleObject(GameObject* obj, int newX, int newY){
-    if(obj == NULL) return;
-
+inline static void moveInvisibleObject(GameObject* obj, int newX, int newY){
     obj->bounds->x = newX;
     obj->bounds->y = newY;
+}
 
-    if(obj->parts[0] == NULL) return;
+inline static void moveSimpleObject(GameObject* obj, int newX, int newY){
+    moveInvisibleObject(obj,newX,newY);
 
     obj->parts[0]->bounds->x = newX;
     obj->parts[0]->bounds->y = newY;
@@ -167,7 +167,7 @@ void moveSimpleObject(GameObject* obj, int newX, int newY){
 /*
 * Moves an object and all it's parts to a new position
 * Only needed for multi sprite objects
-* Invisible or single part objects can be moved faster with moveSimpleObject
+* Invisible or single part objects can be moved faster with moveSimpleObject and moveInvisibleObject
 */
 void moveSplitObject(GameObject* obj, int newX, int newY){
     if(obj == NULL) return;
