@@ -2,7 +2,7 @@
 #include <SDL2/SDL.h>
 #include "./dynamic_buffer.h"
 
-//#define RENDER_DEBUG
+#define RENDER_DEBUG
 
 //prototypes for game functions, implemented in main.c
 int gameSetup();//called once, setup everything, return 1 for failure
@@ -175,7 +175,6 @@ static void render(){
     //render game objects
     for(int i=0;i < gameState.toDraw.len;i++){
         for(int j=0;j < gameState.toDraw.buffer[i]->partCount; j++){
-        #ifndef RENDER_DEBUG
 
         SDL_RenderCopyEx(
             gameState.renderer,
@@ -186,16 +185,21 @@ static void render(){
             NULL,
             gameState.toDraw.buffer[i]->parts[j]->flip
         );
-
-        #else
-        SET_COLOR(gameState.renderer,(Color){0xFF00FF});
-        SDL_RenderFillRect(
+        #ifdef RENDER_DEBUG
+        SET_COLOR(gameState.renderer,(Color){0xEBC634});
+        SDL_RenderDrawRect(
             gameState.renderer,
             gameState.toDraw.buffer[i]->parts[j]->bounds
         );
-
         #endif
         }
+        #ifdef RENDER_DEBUG
+        SET_COLOR(gameState.renderer,(Color){0xEB34C3});
+        SDL_RenderDrawRect(
+            gameState.renderer,
+            gameState.toDraw.buffer[i]->bounds
+        );
+        #endif
     }
 
     SDL_RenderPresent(gameState.renderer);
