@@ -153,13 +153,14 @@ int addObjectPart(SDL_Renderer* target,GameObject* obj,Sprite* sprite,int xOffse
 * Using on a multi part object will cause only first sprite to be moved while the others remain
 */
 inline static void moveInvisibleObject(GameObject* obj, int newX, int newY){
+    if(obj == NULL) return;
     obj->bounds->x = newX;
     obj->bounds->y = newY;
 }
 
 inline static void moveSimpleObject(GameObject* obj, int newX, int newY){
     moveInvisibleObject(obj,newX,newY);
-
+    if(obj->parts[0] == NULL) return;
     obj->parts[0]->bounds->x = newX;
     obj->parts[0]->bounds->y = newY;
 }
