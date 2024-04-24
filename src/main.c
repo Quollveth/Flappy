@@ -9,10 +9,12 @@
 #define pipeMiddleAsset "./assets/pipe_middle.bmp"
 #define pipeEndAsset "./assets/pipe_end.bmp"
 
-//game objects are globals
-
 #define PIPE_DISTANCE 400 //distance between pipes
 #define PIPE_GAP 200 //gap between top and bottom pipe
+
+//game objects are globals
+GameObject* bird;
+GameObject* pipe;
 
 int gameSetup(){
     //called once, setup everything, return 1 for failure
@@ -20,10 +22,10 @@ int gameSetup(){
     Sprite* pipeEndSprite = loadSprite(pipeEndAsset);
     Sprite* pipeMiddleSprite = loadSprite(pipeMiddleAsset);
 
-    GameObject* bird = createGameObject(birdSprite,50,35);
+    bird = createGameObject(birdSprite,50,35);
     moveSimpleObject(bird,150,50);
 
-    GameObject* pipe = createGameObject(pipeEndSprite,50,50);
+    pipe = createGameObject(pipeEndSprite,50,50);
 
     for(int i=1;i<=5;i++){
         buildGameObject(
@@ -53,4 +55,6 @@ int gameLogic(float delta_time){
 
 void gameCleanup(){
     //called once, cleanup everything
+    destroyGameObject(bird);
+    destroyGameObject(pipe);
 }

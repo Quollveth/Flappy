@@ -259,8 +259,13 @@ int buildGameObject(GameObject* obj,Sprite* newPart,int xOffset, int yOffset,int
     );
 }
 
-void destroyGameObject(int id){
-    dbRemoveById(&gameState.toDraw,id);
+/*
+* Wrapper for destroyObject function that removes it from drawList first
+* Remember to separately free the sprites with destroySprite
+*/
+void destroyGameObject(GameObject* obj){
+    dbRemoveById(&gameState.toDraw,obj->id);
+    destroyObject(obj);
 }
 
 int main() {

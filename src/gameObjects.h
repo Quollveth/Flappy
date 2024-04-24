@@ -18,7 +18,7 @@ typedef union {
 
 /**** OBJECT UTILITIES ****/
 
-#define MAX_PIECES 16 //max number of sprites per object
+#define MAX_PIECES 32 //max number of sprites per object
 
 typedef struct {
     SDL_Surface* spriteSurface;
@@ -74,6 +74,11 @@ Sprite* initializeSprite(SDL_Renderer* target, char* spritePath){
 
 /* OBJECT HANDLING */
 
+/*
+* Destroys an object and all it's parts while leaving sprites untouched
+* Remember to separately free the sprites with destroySprite
+* Do not directly call this function if the object is on the drawList
+*/
 void destroyObject(GameObject* obj){
     if(obj == NULL) return;
     if(obj->bounds != NULL) free(obj->bounds);
@@ -144,8 +149,8 @@ int addObjectPart(SDL_Renderer* target,GameObject* obj,Sprite* sprite,int xOffse
 }
 
 /*
-* moves an object with one or no sprites
-* using one a multi part object will cause only first sprite to be moved while the others remain
+* Moves an object with one or no sprites
+* Using on a multi part object will cause only first sprite to be moved while the others remain
 */
 void moveSimpleObject(GameObject* obj, int newX, int newY){
     if(obj == NULL) return;
@@ -160,9 +165,9 @@ void moveSimpleObject(GameObject* obj, int newX, int newY){
 }
 
 /*
-* moves an object and all it's parts to a new position
-* only needed for multi sprite objects
-invisible or single part objects can be moved faster with moveSimpleObject
+* Moves an object and all it's parts to a new position
+* Only needed for multi sprite objects
+* Invisible or single part objects can be moved faster with moveSimpleObject
 */
 void moveSplitObject(GameObject* obj, int newX, int newY){
     if(obj == NULL) return;

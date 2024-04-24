@@ -35,9 +35,8 @@ void dbRemove(struct dBuffer* db,int index){
     }
 }
 
+//Removes object with given id
 int dbRemoveById(struct dBuffer* db,int id){
-    //we can't use array indexing since objects can be added and removed arbitrarily
-    //a hash table would fix this, but it won't get complex enough to justify one
     for(int i = 0;i < db->len;i++){
         if(db->buffer[i]->id == id){
             dbRemove(db,i);
@@ -47,9 +46,8 @@ int dbRemoveById(struct dBuffer* db,int id){
     return 1; //could not find id
 } 
 
-GameObject* getObject(struct dBuffer* db,int id){
-    //we can't use array indexing since objects can be added and removed arbitrarily
-    //a hash table would fix this, but it won't get complex enough to justify one
+//Gets object with given id
+GameObject* dbGetObject(struct dBuffer* db,int id){
     for(int i = 0;i < db->len;i++){
         if(db->buffer[i]->id == id){
             return db->buffer[i];
