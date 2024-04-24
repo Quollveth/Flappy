@@ -9,7 +9,7 @@
 #define pipeEndAsset "./assets/pipe_end.bmp"
 
 #define PIPE_DISTANCE 400 //distance between pipes
-#define PIPE_GAP 200 //gap between top and bottom pipe
+#define PIPE_GAP 150 //gap between top and bottom pipe
 
 
 //gamestate things for this file
@@ -44,16 +44,35 @@ Pipe* createPipe(){
     //first the bottom one
     newPipe->bottom = createGameObject(pipeEndSprite,50,50);
     moveSimpleObject(newPipe->bottom,0,gameSettings.WIN_HEIGHT - ((nPipes+1)*50));
+
     for (int i = 1; i <= nPipes; i++) {
         buildGameObject(
             newPipe->bottom,
             pipeMiddleSprite,
             0,
-            50 * i, //add pipes above the end piece
+            50 * i, //add pipes below the end piece
             50,
             50
         );
     }
+
+    //now the top one
+    newPipe->top = createGameObject(pipeEndSprite,50,50);
+    nPipes = maxPipeSegments - 2 - nPipes;
+    moveSimpleObject(newPipe->top,0,nPipes * 50);
+    newPipe->top->parts[0]->flip = SDL_FLIP_VERTICAL;
+
+    for (int i = 1; i <= nPipes; i++) {
+        buildGameObject(
+            newPipe->top,
+            pipeMiddleSprite,
+            0,
+            -50, //add pipes above, each new piece moves the bounding box Y position so no multiplication is needed
+            50,
+            50
+        );
+    }
+
 
     newPipe->xPos = 0;
     return newPipe;
