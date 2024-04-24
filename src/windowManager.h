@@ -2,7 +2,7 @@
 #include <SDL2/SDL.h>
 #include "./dynamic_buffer.h"
 
-#define RENDER_DEBUG
+//#define RENDER_DEBUG
 
 //prototypes for game functions, implemented in main.c
 int gameSetup();//called once, setup everything, return 1 for failure

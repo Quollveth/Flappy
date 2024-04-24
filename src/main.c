@@ -17,16 +17,16 @@ Sprite* birdSprite;
 Sprite* pipeEndSprite;
 Sprite* pipeMiddleSprite;
 GameObject* bird;
-GameObject* pipe;
 
 int maxPipeSegments; //how many segments are needed to fill the screen
-
 
 typedef struct {
     GameObject* top;
     GameObject* bottom;
     int xPos;
 }Pipe; //there is no way for a object to have multiple bounding boxes but i still want pipes to be one thing instead of two separate objects
+
+Pipe* ThePipe;
 
 inline static int randomNumber(int cap) {
     return rand() % cap;
@@ -78,6 +78,12 @@ Pipe* createPipe(){
     return newPipe;
 }
 
+inline static void movePipe(Pipe* pipe,int newX){
+    pipe->xPos = newX;
+    moveSplitObject(pipe->top,newX,0);
+    moveSplitObject(pipe->bottom,newX,pipe->bottom->bounds->y);
+}
+
 int gameSetup(){
     //called once, setup everything, return 1 for failure
     srand(time(NULL));
@@ -91,7 +97,8 @@ int gameSetup(){
     bird = createGameObject(birdSprite,50,35);
     moveSimpleObject(bird,500,50);
 
-    createPipe();
+    ThePipe = createPipe();
+    movePipe(ThePipe,150);
 
     return 0;
 }
