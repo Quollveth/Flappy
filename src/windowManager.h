@@ -184,7 +184,7 @@ static void render(){
             gameState.toDraw.buffer[i]->parts[j]->bounds,
             0.0,
             NULL,
-            gameState.toDraw.buffer[i]->flipHorizontal?SDL_FLIP_HORIZONTAL:SDL_FLIP_NONE
+            gameState.toDraw.buffer[i]->parts[j]->flip
         );
 
         #else

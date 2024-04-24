@@ -28,6 +28,7 @@ typedef struct {
 typedef struct{
     Sprite* sprite; //reference only, multiple objects may reference the same sprite
     SDL_Rect* bounds; //relative to object bounds, used to position it on screen
+    SDL_RendererFlip flip; //will be improved when i feel like doing linear algebra
 } ObjectPart;
 
 typedef struct {
@@ -35,7 +36,6 @@ typedef struct {
     ObjectPart* parts[MAX_PIECES];
     int partCount;
     SDL_Rect* bounds; //object bound, used for collision checking and placing all the sprites, can be different from the actual drawn bounds
-    bool flipHorizontal; //more than that is too much of a headache, i may do it later when i'm in the mood for linear algebra
 }GameObject;
 
 /* SPRITE HANDLING */
@@ -109,8 +109,6 @@ GameObject* initializeObject(SDL_Renderer* target){
 
     *obj->bounds = (SDL_Rect){0,0,0,0};
 
-    obj->flipHorizontal = false;
-
     for(int i=0;i<MAX_PIECES;i++){
         obj->parts[i] = NULL;
     }
@@ -124,7 +122,7 @@ GameObject* initializeObject(SDL_Renderer* target){
 
 int addObjectPart(SDL_Renderer* target,GameObject* obj,Sprite* sprite,int xOffset, int yOffset,int spriteHeight, int spriteWidth){
     if(sprite == NULL) return 1;
-
+    //TODO: Above check done by wrapper function, can be removed
     ObjectPart* newPart = malloc(sizeof(ObjectPart));
     if(newPart == NULL) return 1;
     //TODO: Proper error handling
@@ -142,15 +140,37 @@ int addObjectPart(SDL_Renderer* target,GameObject* obj,Sprite* sprite,int xOffse
     newPart->bounds->h = spriteHeight;
     newPart->bounds->w = spriteWidth;
 
+    newPart->flip = SDL_FLIP_NONE;
+
     obj->parts[obj->partCount] = newPart;
     obj->partCount++;
+
+    if (obj->partCount == 1) {
+        *obj->bounds = *newPart->bounds;
+        return 0;
+    }
+
+    int minX = obj->bounds->x;
+    int minY = obj->bounds->y;
+    int maxX = obj->bounds->x + obj->bounds->w;
+    int maxY = obj->bounds->y + obj->bounds->h;
+
+    if (newPart->bounds->x < minX) minX = newPart->bounds->x;
+    if (newPart->bounds->y < minY) minY = newPart->bounds->y;
+    if (newPart->bounds->x + newPart->bounds->w > maxX) maxX = newPart->bounds->x + newPart->bounds->w;
+    if (newPart->bounds->y + newPart->bounds->h > maxY) maxY = newPart->bounds->y + newPart->bounds->h;
+
+    obj->bounds->x = minX;
+    obj->bounds->y = minY;
+    obj->bounds->w = maxX - minX;
+    obj->bounds->h = maxY - minY;
 
     return 0;
 }
 
 /*
-* Moves an object with one or no sprites
-* Using on a multi part object will cause only first sprite to be moved while the others remain
+* Moves an object with no sprites
+* Using on a multi part object will cause bad things
 */
 inline static void moveInvisibleObject(GameObject* obj, int newX, int newY){
     if(obj == NULL) return;
@@ -158,6 +178,11 @@ inline static void moveInvisibleObject(GameObject* obj, int newX, int newY){
     obj->bounds->y = newY;
 }
 
+/*
+* Moves an object with only one sprite
+* Using on a multi part object will cause bad things
+* Do not use on invisible objects
+*/
 inline static void moveSimpleObject(GameObject* obj, int newX, int newY){
     moveInvisibleObject(obj,newX,newY);
     if(obj->parts[0] == NULL) return;
@@ -186,4 +211,42 @@ void moveSplitObject(GameObject* obj, int newX, int newY){
         obj->parts[i]->bounds->x += xDiff;
         obj->parts[i]->bounds->y += yDiff;
     }
+}
+
+/*
+* Updates the object bounds to encompass all sprites in the object
+* They should be automatically updated when adding new pieces anyways
+* Does nothing to invisible objects
+* Position remains unchanged
+*/
+void recalculateBounds(GameObject* obj){
+    if(obj == NULL || obj->partCount == 0) return;
+
+    int minX = obj->parts[0]->bounds->x;
+    int minY = obj->parts[0]->bounds->y;
+    int maxX = obj->parts[0]->bounds->x + obj->parts[0]->bounds->w;
+    int maxY = obj->parts[0]->bounds->y + obj->parts[0]->bounds->h;
+
+    for(int i = 1; i < obj->partCount; i++){
+        if(obj->parts[i] == NULL) continue;
+
+        if(obj->parts[i]->bounds->x < minX) {
+            minX = obj->parts[i]->bounds->x;
+        }
+
+        if(obj->parts[i]->bounds->y < minY) {
+            minY = obj->parts[i]->bounds->y;
+        }
+
+        if(obj->parts[i]->bounds->x + obj->parts[i]->bounds->w > maxX) {
+            maxX = obj->parts[i]->bounds->x + obj->parts[i]->bounds->w;
+        }
+
+        if(obj->parts[i]->bounds->y + obj->parts[i]->bounds->h > maxY) {
+            maxY = obj->parts[i]->bounds->y + obj->parts[i]->bounds->h;
+        }
+    }
+
+    obj->bounds->w = maxX - minX;
+    obj->bounds->h = maxY - minY;
 }
