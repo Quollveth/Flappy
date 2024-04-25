@@ -169,7 +169,7 @@ static int update(){
 
 static void render(){
     //black screen
-    SET_COLOR(gameState.renderer,(Color){0x000000});
+    SET_COLOR(gameState.renderer,(Color){0x7BC5ED});
     SDL_RenderClear(gameState.renderer);
 
     //render game objects
