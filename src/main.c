@@ -8,7 +8,7 @@
 #define pipeMiddleAsset "./assets/pipe_middle.bmp"
 #define pipeEndAsset "./assets/pipe_end.bmp"
 
-#define PIPE_DISTANCE 400 //distance between pipes
+#define PIPE_DISTANCE 300 //distance between pipes
 #define PIPE_GAP 150 //gap between top and bottom pipe
 
 typedef struct {
@@ -25,10 +25,11 @@ GameObject* bird;
 
 int maxPipeSegments; //how many segments are needed to fill the screen
 int maxPipes;
+Pipe* *pipes; //Pipe* pipes[maxPipes] but that's a dynamic value
 
 inline static int randomNumber(int cap) {return rand() % cap;}
 
-Pipe* createPipe(){
+Pipe* createPipe(int xPos){
     Pipe* newPipe = malloc(sizeof(Pipe));
     // place a random amount of pipes at the bottom
     // skip the gap distance
@@ -38,7 +39,7 @@ Pipe* createPipe(){
 
     //first the bottom one
     newPipe->bottom = createGameObject(pipeEndSprite,50,50);
-    moveSimpleObject(newPipe->bottom,0,gameSettings.WIN_HEIGHT - ((nPipes+1)*50));
+    moveSimpleObject(newPipe->bottom,xPos,gameSettings.WIN_HEIGHT - ((nPipes+1)*50));
 
     for (int i = 1; i <= nPipes; i++) {
         buildGameObject(
@@ -54,7 +55,7 @@ Pipe* createPipe(){
     //now the top one
     newPipe->top = createGameObject(pipeEndSprite,50,50);
     nPipes = maxPipeSegments - 2 - nPipes;
-    moveSimpleObject(newPipe->top,0,nPipes * 50);
+    moveSimpleObject(newPipe->top,xPos,nPipes * 50);
     newPipe->top->parts[0]->flip = SDL_FLIP_VERTICAL;
 
     for (int i = 1; i <= nPipes; i++) {
@@ -68,9 +69,14 @@ Pipe* createPipe(){
         );
     }
 
-
-    newPipe->xPos = 0;
+    newPipe->xPos = xPos;
     return newPipe;
+}
+
+void destroyPipe(Pipe* pipe){
+    destroyGameObject(pipe->top);
+    destroyGameObject(pipe->bottom);
+    free(pipe);
 }
 
 inline static void movePipe(Pipe* pipe,int newX){
@@ -90,7 +96,15 @@ int gameSetup(){
     maxPipeSegments = (gameSettings.WIN_HEIGHT - PIPE_GAP)/50;
 
     bird = createGameObject(birdSprite,50,35);
-    moveSimpleObject(bird,50,50);
+    moveSimpleObject(bird,100,50);
+
+    maxPipes = (gameSettings.WIN_WIDTH/PIPE_DISTANCE)+1;
+
+    pipes = malloc(sizeof(Pipe*)*maxPipes);
+
+    for (int i = 0; i < maxPipes; i++) {
+        pipes[i] = createPipe(gameSettings.WIN_WIDTH + (i*PIPE_DISTANCE));
+    }
 
     return 0;
 }
@@ -98,20 +112,41 @@ int gameSetup(){
 void gameInput(int key){
     //called every time a key is pressed
     if (key == SDLK_SPACE) {
-        moveSimpleObject(bird, bird->bounds->x, bird->bounds->y - 100);
+        moveSimpleObject(bird, bird->bounds->x, bird->bounds->y - 50);
     }
 }
 
 int gameLogic(float delta_time){
     //called every frame, return 1 to quit game 0 to continue
     // bird gravity
-    moveSimpleObject(bird,bird->bounds->x,bird->bounds->y + 100 * delta_time);
+    printf("\033[2J\033[H\n");
+    
+    moveSimpleObject(bird,bird->bounds->x,bird->bounds->y + 150 * delta_time);
 
     if (bird->bounds->y < 0) {
         bird->bounds->y = 0;
     } else if (bird->bounds->y + bird->bounds->h > gameSettings.WIN_HEIGHT) {
         bird->bounds->y = gameSettings.WIN_HEIGHT - bird->bounds->h;
     }    
+
+    for (int i = 0; i < maxPipes; i++) {
+        if(pipes[i] == NULL) continue;
+
+        movePipe(pipes[i],pipes[i]->xPos - (100 * delta_time));
+
+        //bird collision check
+        if(pipes[i]->xPos > 100 && pipes[i]->xPos < 200){
+            printf("checking\n");
+        }
+
+        //wrap around
+        if(pipes[i]->xPos < -50){
+            destroyPipe(pipes[i]);
+            pipes[i] = createPipe(gameSettings.WIN_WIDTH);
+            continue;
+        }
+
+    }
 
     return 0;
 }
