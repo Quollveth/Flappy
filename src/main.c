@@ -27,6 +27,9 @@ int maxPipeSegments; //how many segments are needed to fill the screen
 int maxPipes;
 Pipe* *pipes; //Pipe* pipes[maxPipes] but that's a dynamic value
 
+int score;
+bool paused;
+
 inline static int randomNumber(int cap) {return rand() % cap;}
 
 Pipe* createPipe(int xPos){
@@ -116,11 +119,17 @@ void gameInput(int key){
     }
 }
 
+int die(){
+    //TODO: Show score and prompt the player if they'd like to continue
+    return 1;
+}
+
 int gameLogic(float delta_time){
     //called every frame, return 1 to quit game 0 to continue
-    // bird gravity
+    if(paused) return 0;
     printf("\033[2J\033[H\n");
     
+    // bird gravity
     moveSimpleObject(bird,bird->bounds->x,bird->bounds->y + 150 * delta_time);
 
     if (bird->bounds->y < 0) {
@@ -136,7 +145,13 @@ int gameLogic(float delta_time){
 
         //bird collision check
         if(pipes[i]->xPos > 100 && pipes[i]->xPos < 200){
-            printf("checking\n");
+            if(
+                SDL_HasIntersection(bird->bounds,pipes[i]->top->bounds)
+                ||
+                SDL_HasIntersection(bird->bounds,pipes[i]->bottom->bounds)
+            ){
+                goto die;
+            }
         }
 
         //wrap around
@@ -149,6 +164,9 @@ int gameLogic(float delta_time){
     }
 
     return 0;
+
+    die:
+    return die();
 }
 
 void gameCleanup(){
