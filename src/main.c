@@ -11,6 +11,11 @@
 #define PIPE_DISTANCE 400 //distance between pipes
 #define PIPE_GAP 150 //gap between top and bottom pipe
 
+typedef struct {
+    GameObject* top;
+    GameObject* bottom;
+    int xPos;
+}Pipe; //there is no way for a object to have multiple bounding boxes but i still want pipes to be one thing instead of two separate objects
 
 //gamestate things for this file
 Sprite* birdSprite;
@@ -19,19 +24,9 @@ Sprite* pipeMiddleSprite;
 GameObject* bird;
 
 int maxPipeSegments; //how many segments are needed to fill the screen
+int maxPipes;
 
-typedef struct {
-    GameObject* top;
-    GameObject* bottom;
-    int xPos;
-}Pipe; //there is no way for a object to have multiple bounding boxes but i still want pipes to be one thing instead of two separate objects
-
-Pipe* ThePipe;
-
-inline static int randomNumber(int cap) {
-    return rand() % cap;
-}
-
+inline static int randomNumber(int cap) {return rand() % cap;}
 
 Pipe* createPipe(){
     Pipe* newPipe = malloc(sizeof(Pipe));
@@ -95,20 +90,28 @@ int gameSetup(){
     maxPipeSegments = (gameSettings.WIN_HEIGHT - PIPE_GAP)/50;
 
     bird = createGameObject(birdSprite,50,35);
-    moveSimpleObject(bird,500,50);
-
-    ThePipe = createPipe();
-    movePipe(ThePipe,150);
+    moveSimpleObject(bird,50,50);
 
     return 0;
 }
 
 void gameInput(int key){
     //called every time a key is pressed
+    if (key == SDLK_SPACE) {
+        moveSimpleObject(bird, bird->bounds->x, bird->bounds->y - 100);
+    }
 }
 
 int gameLogic(float delta_time){
     //called every frame, return 1 to quit game 0 to continue
+    // bird gravity
+    moveSimpleObject(bird,bird->bounds->x,bird->bounds->y + 100 * delta_time);
+
+    if (bird->bounds->y < 0) {
+        bird->bounds->y = 0;
+    } else if (bird->bounds->y + bird->bounds->h > gameSettings.WIN_HEIGHT) {
+        bird->bounds->y = gameSettings.WIN_HEIGHT - bird->bounds->h;
+    }    
 
     return 0;
 }
