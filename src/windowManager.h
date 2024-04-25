@@ -176,6 +176,17 @@ static void render(){
     //render game objects
     for(int i=0;i < gameState.toDraw.len;i++){
         for(int j=0;j < gameState.toDraw.buffer[i]->partCount; j++){
+        
+        if(gameState.toDraw.buffer[i] == NULL) continue;
+        if(gameState.toDraw.buffer[i]->parts[j] == NULL) continue;
+
+        if(gameState.toDraw.buffer[i]->parts[j]->sprite->type == TEXT){
+            //TODO: text rendering here
+            #ifdef RENDER_DEBUG
+            goto debug_render;
+            #endif
+            continue;
+        }
 
         SDL_RenderCopyEx(
             gameState.renderer,
@@ -186,7 +197,9 @@ static void render(){
             NULL,
             gameState.toDraw.buffer[i]->parts[j]->flip
         );
+
         #ifdef RENDER_DEBUG
+        debug_render:
         SET_COLOR(gameState.renderer,(Color){0xEBC634});
         SDL_RenderDrawRect(
             gameState.renderer,
@@ -214,7 +227,7 @@ static void render(){
  * @return A pointer to the loaded Sprite object, or NULL if an error occurred.
  */
 Sprite* loadSprite(char* path){
-    Sprite* newSprite = initializeSprite(gameState.renderer,path);
+    Sprite* newSprite = initializeSprite(gameState.renderer,path,IMAGE);
     if(newSprite == NULL) return NULL;
     //TODO: Proper error handling
 

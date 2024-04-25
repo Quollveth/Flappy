@@ -19,10 +19,17 @@ typedef union {
 /**** OBJECT UTILITIES ****/
 
 #define MAX_PIECES 32 //max number of sprites per object
+#define MAX_TEXT 1024 //max text buffer
+
+enum spriteType {
+    IMAGE,
+    TEXT
+};
 
 typedef struct {
     SDL_Surface* spriteSurface;
     SDL_Texture* spriteTexture;
+    enum spriteType type;
 } Sprite;
 
 typedef struct{
@@ -47,13 +54,15 @@ void destroySprite(Sprite* spr){
     free(spr);
 }
 
-Sprite* initializeSprite(SDL_Renderer* target, char* spritePath){
+Sprite* initializeSprite(SDL_Renderer* target, char* spritePath,enum spriteType type){
     Sprite* newSprite = malloc(sizeof(Sprite));
     if(newSprite == NULL) return NULL;
     //TODO: Proper error handling
 
     newSprite->spriteSurface = NULL;
     newSprite->spriteTexture = NULL;
+
+    if(type == TEXT) return newSprite; //text sprites are not initialized since they are generated dynamically as the text updates
 
     newSprite->spriteSurface = SDL_LoadBMP(spritePath);
     if(newSprite->spriteSurface == NULL){
