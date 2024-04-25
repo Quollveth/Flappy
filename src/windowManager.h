@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <SDL2/SDL.h>
 #include "./dynamic_buffer.h"
+#include <SDL2/SDL_ttf.h>
 
 //#define RENDER_DEBUG
 

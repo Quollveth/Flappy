@@ -1,9 +1,10 @@
 # Flappy Bird
 
-This is a simple Flappy Bird game implemented using SDL in pure C
-This is my first project using SDL
+This is a simple Flappy Bird game implemented using SDL in pure C.
+This is my first project using SDL.
 
-It has no dependencies other than the C standard library and SDL2 which it uses to implement a very basic SDL game framework that could be reused fairly easy for other simple games
+It has no dependencies other than the C standard library, SDL2 and SDL_ttf.
+I implemented a very basic SDL game framework that could be reused fairly easy for other simple games
 
 ### Controls
 - Spacebar | Jump
