@@ -150,7 +150,7 @@ int gameLogic(float delta_time){
                 ||
                 SDL_HasIntersection(bird->bounds,pipes[i]->bottom->bounds)
             ){
-                goto die;
+                return die();
             }
         }
 
@@ -164,9 +164,6 @@ int gameLogic(float delta_time){
     }
 
     return 0;
-
-    die:
-    return die();
 }
 
 void gameCleanup(){
