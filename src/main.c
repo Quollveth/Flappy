@@ -109,6 +109,8 @@ int gameSetup(){
         pipes[i] = createPipe(gameSettings.WIN_WIDTH + (i*PIPE_DISTANCE));
     }
 
+    score = 0;
+    paused = false;
     return 0;
 }
 
@@ -116,6 +118,9 @@ void gameInput(int key){
     //called every time a key is pressed
     if (key == SDLK_SPACE) {
         moveSimpleObject(bird, bird->bounds->x, bird->bounds->y - 50);
+    }
+    if (key == SDLK_ESCAPE) {
+        paused = !paused;
     }
 }
 
@@ -128,7 +133,10 @@ int gameLogic(float delta_time){
     //called every frame, return 1 to quit game 0 to continue
     if(paused) return 0;
     printf("\033[2J\033[H\n");
-    
+    printf("Score: %d\n",score);
+
+    static int lastScored = -1;
+
     // bird gravity
     moveSimpleObject(bird,bird->bounds->x,bird->bounds->y + 150 * delta_time);
 
@@ -154,13 +162,17 @@ int gameLogic(float delta_time){
             }
         }
 
+        if(pipes[i]->xPos < 100 && i != lastScored){
+            lastScored = i;
+            score++;
+        }
+
         //wrap around
         if(pipes[i]->xPos < -50){
             destroyPipe(pipes[i]);
             pipes[i] = createPipe(gameSettings.WIN_WIDTH);
             continue;
         }
-
     }
 
     return 0;
