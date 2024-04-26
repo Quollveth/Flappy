@@ -18,9 +18,9 @@ typedef struct {
 }Pipe; //there is no way for a object to have multiple bounding boxes but i still want pipes to be one thing instead of two separate objects
 
 //gamestate things for this file
-Sprite* birdSprite;
-Sprite* pipeEndSprite;
-Sprite* pipeMiddleSprite;
+Sprite birdSprite;
+Sprite pipeEndSprite;
+Sprite pipeMiddleSprite;
 GameObject* bird;
 
 int maxPipeSegments; //how many segments are needed to fill the screen

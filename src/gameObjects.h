@@ -21,23 +21,24 @@ typedef union {
 #define MAX_PIECES 32 //max number of sprites per object
 #define MAX_TEXT 1024 //max text buffer
 
-enum spriteType {
-    IMAGE,
-    TEXT
-};
+/** DEFINITIONS **/
 
-typedef struct {
-    SDL_Surface* spriteSurface;
-    SDL_Texture* spriteTexture;
-    enum spriteType type;
-} Sprite;
+typedef SDL_Texture* Sprite;
+#define DESTROY_SPRITE(Sprite) SDL_DestroyTexture(Sprite)
 
+/*
+* A single part of a game object, contains a single image, it's bounds and a option to flip it
+*/
 typedef struct{
-    Sprite* sprite; //reference only, multiple objects may reference the same sprite
+    Sprite sprite; //reference only, multiple objects may reference the same sprite
     SDL_Rect* bounds; //relative to object bounds, used to position it on screen
     SDL_RendererFlip flip; //will be improved when i feel like doing linear algebra
 } ObjectPart;
 
+/*
+* A game object, composed of multiple parts with a unique id
+* bounds surround all parts composing object to be used for collision checking
+*/
 typedef struct {
     int id;
     ObjectPart* parts[MAX_PIECES];
@@ -46,34 +47,16 @@ typedef struct {
 }GameObject;
 
 /* SPRITE HANDLING */
-
-void destroySprite(Sprite* spr){
-    if(spr == NULL) return;
-    if(spr->spriteTexture != NULL) SDL_DestroyTexture(spr->spriteTexture);
-    if(spr->spriteSurface != NULL) SDL_FreeSurface(spr->spriteSurface);
-    free(spr);
-}
-
-Sprite* initializeSprite(SDL_Renderer* target, char* spritePath,enum spriteType type){
-    Sprite* newSprite = malloc(sizeof(Sprite));
-    if(newSprite == NULL) return NULL;
-    //TODO: Proper error handling
-
-    newSprite->spriteSurface = NULL;
-    newSprite->spriteTexture = NULL;
-
-    if(type == TEXT) return newSprite; //text sprites are not initialized since they are generated dynamically as the text updates
-
-    newSprite->spriteSurface = SDL_LoadBMP(spritePath);
-    if(newSprite->spriteSurface == NULL){
-        destroySprite(newSprite);
+Sprite initializeSprite(SDL_Renderer* target, char* spritePath){
+    SDL_Surface* tempSurface = SDL_LoadBMP(spritePath);
+    if(tempSurface == NULL){
         return NULL;
         //TODO: Proper error handling
     }
 
-    newSprite->spriteTexture = SDL_CreateTextureFromSurface(target,newSprite->spriteSurface);
-    if(newSprite->spriteTexture == NULL){
-        destroySprite(newSprite);
+    Sprite newSprite  = SDL_CreateTextureFromSurface(target,tempSurface);
+    if(newSprite == NULL){
+        SDL_FreeSurface(tempSurface);
         return NULL;
         //TODO: Proper error handling
     }
@@ -129,9 +112,7 @@ GameObject* initializeObject(SDL_Renderer* target){
     return obj;    
 }
 
-int addObjectPart(SDL_Renderer* target,GameObject* obj,Sprite* sprite,int xOffset, int yOffset,int spriteHeight, int spriteWidth){
-    if(sprite == NULL) return 1;
-    //TODO: Above check done by wrapper function, can be removed
+int addObjectPart(SDL_Renderer* target,GameObject* obj,Sprite sprite,int xOffset, int yOffset,int spriteHeight, int spriteWidth){
     ObjectPart* newPart = malloc(sizeof(ObjectPart));
     if(newPart == NULL) return 1;
     //TODO: Proper error handling

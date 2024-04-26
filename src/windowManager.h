@@ -180,17 +180,9 @@ static void render(){
         if(gameState.toDraw.buffer[i] == NULL) continue;
         if(gameState.toDraw.buffer[i]->parts[j] == NULL) continue;
 
-        if(gameState.toDraw.buffer[i]->parts[j]->sprite->type == TEXT){
-            //TODO: text rendering here
-            #ifdef RENDER_DEBUG
-            goto debug_render;
-            #endif
-            continue;
-        }
-
         SDL_RenderCopyEx(
             gameState.renderer,
-            gameState.toDraw.buffer[i]->parts[j]->sprite->spriteTexture,
+            gameState.toDraw.buffer[i]->parts[j]->sprite,
             NULL,
             gameState.toDraw.buffer[i]->parts[j]->bounds,
             0.0,
@@ -226,8 +218,8 @@ static void render(){
  * @param path The file path of the sprite image.
  * @return A pointer to the loaded Sprite object, or NULL if an error occurred.
  */
-Sprite* loadSprite(char* path){
-    Sprite* newSprite = initializeSprite(gameState.renderer,path,IMAGE);
+Sprite loadSprite(char* path){
+    Sprite newSprite = initializeSprite(gameState.renderer,path);
     if(newSprite == NULL) return NULL;
     //TODO: Proper error handling
 
@@ -242,7 +234,7 @@ Sprite* loadSprite(char* path){
  * @param h The height of the GameObject.
  * @return A pointer to the newly created GameObject, or NULL if an error occurred.
  */
-GameObject* createGameObject(Sprite* firstPart,int w,int h){
+GameObject* createGameObject(Sprite firstPart,int w,int h){
     GameObject* newObj = initializeObject(gameState.renderer);
     if(newObj == NULL) return NULL;
 
@@ -264,6 +256,7 @@ GameObject* createGameObject(Sprite* firstPart,int w,int h){
 
 /**
  * Adds a new part to a game object
+ * Wrapper for addObjectPart() with error handling
  * 
  * @param obj The game object to add the part to.
  * @param sprite The sprite to use for the part.
@@ -273,7 +266,7 @@ GameObject* createGameObject(Sprite* firstPart,int w,int h){
  * @param spriteWidth The width of the sprite.
  * @return Returns 0 on success, 1 on failure.
 **/
-int buildGameObject(GameObject* obj,Sprite* newPart,int xOffset, int yOffset,int spriteHeight, int spriteWidth){
+int buildGameObject(GameObject* obj,Sprite newPart,int xOffset, int yOffset,int spriteHeight, int spriteWidth){
     if(obj == NULL) return 1;
     if(newPart == NULL) return 1;
     //TODO: Proper error handling
