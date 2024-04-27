@@ -11,13 +11,18 @@ void gameInput(int key);//called every time a key is pressed
 int gameLogic(float delta_time);//called every frame, return 1 to quit game 0 to continue
 void gameCleanup();//called once, cleanup everything
 
+/*
+* Game settings read from ini file
+*/
 struct {
     int WIN_HEIGHT;
     int WIN_WIDTH;
     int TARG_FPS;
     int TARG_TT; //target frame time
 } gameSettings;
-
+/*
+* Internal state of the renderer
+*/
 static struct {
     SDL_Window* window;
     SDL_Renderer* renderer;
@@ -27,7 +32,7 @@ static struct {
     bool isRunning;
 
     struct dBuffer toDraw; //all game objects that need to be drawn
-} gameState;
+} screenState;
 
 enum err_types {
     NONE,
@@ -37,11 +42,16 @@ enum err_types {
     SURFACE
 };
 
+#define DEFAULT_TEXT_SIZE 24
+#define MAX_TEXT_BUFFER 1024 //max text buffer
+
+
+
 static int initialize_window() {
-    if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
+    if (SDL_Init(SDL_INIT_EVERYTHING) != 0 && TTF_Init() != 0) {
         return (enum err_types)SDL_INIT;
     }
-    gameState.window = SDL_CreateWindow(
+    screenState.window = SDL_CreateWindow(
         NULL,
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
@@ -49,17 +59,17 @@ static int initialize_window() {
         gameSettings.WIN_HEIGHT,
         0
     );
-    if (!gameState.window) {
+    if (!screenState.window) {
         return (enum err_types)WINDOW;
     }
     
-    gameState.renderer = SDL_CreateRenderer(gameState.window,-1,0);
-    if (!gameState.renderer) {
+    screenState.renderer = SDL_CreateRenderer(screenState.window,-1,0);
+    if (!screenState.renderer) {
         return (enum err_types)RENDER;
     }
 
-    gameState.mainSurface = SDL_GetWindowSurface(gameState.window);
-    if (!gameState.mainSurface) {
+    screenState.mainSurface = SDL_GetWindowSurface(screenState.window);
+    if (!screenState.mainSurface) {
         return (enum err_types)SURFACE;        
     }
 
@@ -91,16 +101,16 @@ static void closeGame(bool error,enum err_types err_type){
     full_quit:
     gameCleanup();
     //cleanup gameObjects
-    for(int i=0;i<gameState.toDraw.len;i++){
-        if(gameState.toDraw.buffer[i] == NULL) continue;
-        destroyObject(gameState.toDraw.buffer[i]);
-        gameState.toDraw.buffer[i] = NULL;
+    for(int i=0;i<screenState.toDraw.len;i++){
+        if(screenState.toDraw.buffer[i] == NULL) continue;
+        destroyObject(screenState.toDraw.buffer[i]);
+        screenState.toDraw.buffer[i] = NULL;
     }
 
     //labels are used for initialization errors only
-    SDL_DestroyRenderer(gameState.renderer);
+    SDL_DestroyRenderer(screenState.renderer);
     window:
-    SDL_DestroyWindow(gameState.window);
+    SDL_DestroyWindow(screenState.window);
     sdl_quit:
     SDL_Quit();
     skip_all:
@@ -118,14 +128,14 @@ static void setup(){
     gameSettings.WIN_HEIGHT = 600;
 
     //set initial state
-    gameState.window = NULL;
-    gameState.renderer = NULL;
-    gameState.mainSurface = NULL;
+    screenState.window = NULL;
+    screenState.renderer = NULL;
+    screenState.mainSurface = NULL;
 
-    gameState.isRunning = false;
-    gameState.last_frame_time = 0;
+    screenState.isRunning = false;
+    screenState.last_frame_time = 0;
 
-    gameState.toDraw = DBUF_INIT;
+    screenState.toDraw = DBUF_INIT;
 
     //initialize
     int initialization = initialize_window();
@@ -133,7 +143,7 @@ static void setup(){
     if(!initialization) closeGame(true,initialization); //if something done fucked up stop now
 
     //let the game setup it's own stuff    
-    gameState.isRunning = !gameSetup(); //returns 1 on failure
+    screenState.isRunning = !gameSetup(); //returns 1 on failure
 }
 
 static void process_input(){
@@ -143,7 +153,7 @@ static void process_input(){
     switch (event.type){
     
     case SDL_QUIT:
-        gameState.isRunning = false;
+        screenState.isRunning = false;
         break;
     
     case SDL_KEYDOWN:
@@ -157,60 +167,61 @@ static void process_input(){
 
 static int update(){
     // if we are ahead wait for a bit to keep the target fps
-    int time_to_wait = gameSettings.TARG_TT - (SDL_GetTicks() - gameState.last_frame_time);
+    int time_to_wait = gameSettings.TARG_TT - (SDL_GetTicks() - screenState.last_frame_time);
     if(time_to_wait > 0 && time_to_wait <= gameSettings.TARG_TT){
         SDL_Delay(time_to_wait);
     }
 
-    float delta_time = (SDL_GetTicks() - gameState.last_frame_time) / 1000.0f;
-    gameState.last_frame_time = SDL_GetTicks();
+    float delta_time = (SDL_GetTicks() - screenState.last_frame_time) / 1000.0f;
+    screenState.last_frame_time = SDL_GetTicks();
 
     return gameLogic(delta_time); //execute game logic, it will return a 1 if it wishes to close
 }
 
 static void render(){
     //black screen
-    SET_COLOR(gameState.renderer,(Color){0x7BC5ED});
-    SDL_RenderClear(gameState.renderer);
+    SET_COLOR(screenState.renderer,(Color){0x7BC5ED});
+    SDL_RenderClear(screenState.renderer);
 
     //render game objects
-    for(int i=0;i < gameState.toDraw.len;i++){
-        for(int j=0;j < gameState.toDraw.buffer[i]->partCount; j++){
+    for(int i=0;i < screenState.toDraw.len;i++){
+        for(int j=0;j < screenState.toDraw.buffer[i]->partCount; j++){
         
-        if(gameState.toDraw.buffer[i] == NULL) continue;
-        if(gameState.toDraw.buffer[i]->parts[j] == NULL) continue;
+        if(screenState.toDraw.buffer[i] == NULL) continue;
+        if(screenState.toDraw.buffer[i]->parts[j] == NULL) continue;
 
         SDL_RenderCopyEx(
-            gameState.renderer,
-            gameState.toDraw.buffer[i]->parts[j]->sprite,
+            screenState.renderer,
+            screenState.toDraw.buffer[i]->parts[j]->sprite,
             NULL,
-            gameState.toDraw.buffer[i]->parts[j]->bounds,
+            screenState.toDraw.buffer[i]->parts[j]->bounds,
             0.0,
             NULL,
-            gameState.toDraw.buffer[i]->parts[j]->flip
+            screenState.toDraw.buffer[i]->parts[j]->flip
         );
 
         #ifdef RENDER_DEBUG
         debug_render:
-        SET_COLOR(gameState.renderer,(Color){0xEBC634});
+        SET_COLOR(screenState.renderer,(Color){0xEBC634});
         SDL_RenderDrawRect(
-            gameState.renderer,
-            gameState.toDraw.buffer[i]->parts[j]->bounds
+            screenState.renderer,
+            screenState.toDraw.buffer[i]->parts[j]->bounds
         );
         #endif
         }
         #ifdef RENDER_DEBUG
-        SET_COLOR(gameState.renderer,(Color){0xEB34C3});
+        SET_COLOR(screenState.renderer,(Color){0xEB34C3});
         SDL_RenderDrawRect(
-            gameState.renderer,
-            gameState.toDraw.buffer[i]->bounds
+            screenState.renderer,
+            screenState.toDraw.buffer[i]->bounds
         );
         #endif
     }
 
-    SDL_RenderPresent(gameState.renderer);
+    SDL_RenderPresent(screenState.renderer);
 }
 
+/** Wrappers for Gameobject functions **/
 
 /**
  * Loads a sprite from the given file path.
@@ -219,7 +230,7 @@ static void render(){
  * @return A pointer to the loaded Sprite object, or NULL if an error occurred.
  */
 Sprite loadSprite(char* path){
-    Sprite newSprite = initializeSprite(gameState.renderer,path);
+    Sprite newSprite = initializeSprite(screenState.renderer,path);
     if(newSprite == NULL) return NULL;
     //TODO: Proper error handling
 
@@ -235,12 +246,12 @@ Sprite loadSprite(char* path){
  * @return A pointer to the newly created GameObject, or NULL if an error occurred.
  */
 GameObject* createGameObject(Sprite firstPart,int w,int h){
-    GameObject* newObj = initializeObject(gameState.renderer);
+    GameObject* newObj = initializeObject(screenState.renderer);
     if(newObj == NULL) return NULL;
 
     if(firstPart != NULL){
         addObjectPart(
-            gameState.renderer,
+            screenState.renderer,
             newObj,
             firstPart,
             0,
@@ -250,7 +261,7 @@ GameObject* createGameObject(Sprite firstPart,int w,int h){
         );
     }
 
-    dbAppend(&gameState.toDraw,newObj);
+    dbAppend(&screenState.toDraw,newObj);
     return newObj;
 }
 
@@ -272,7 +283,7 @@ int buildGameObject(GameObject* obj,Sprite newPart,int xOffset, int yOffset,int 
     //TODO: Proper error handling
 
     return addObjectPart(
-        gameState.renderer,
+        screenState.renderer,
         obj,
         newPart,
         xOffset,
@@ -287,15 +298,104 @@ int buildGameObject(GameObject* obj,Sprite newPart,int xOffset, int yOffset,int 
 * Remember to separately free the sprites with destroySprite
 */
 void destroyGameObject(GameObject* obj){
-    dbRemoveById(&gameState.toDraw,obj->id);
+    dbRemoveById(&screenState.toDraw,obj->id);
     destroyObject(obj);
+}
+
+/** Text handling **/
+Sprite vscreateTextSprite(SDL_Renderer* target ,TTF_Font* font, Color color, const char* fmt, va_list ap){
+    char buffer[MAX_TEXT_BUFFER] = {0};
+
+    SDL_vsnprintf(buffer,MAX_TEXT_BUFFER,fmt,ap);
+
+    SDL_Surface* textSurface = TTF_RenderText_Solid(
+        font,
+        buffer,
+        CONVERT_COLOR(color)
+    );
+    if(textSurface == NULL){
+        //TODO: Proper error handling
+        return NULL;
+    }
+
+    Sprite textTexture = SDL_CreateTextureFromSurface(target,textSurface);
+    if(textTexture == NULL){
+        //TODO: Proper error handling
+    }
+    SDL_FreeSurface(textSurface);
+    return textTexture;
+}
+
+
+/**
+ * Creates a Sprite containing formatted text using the given font, color, and format string.
+ *
+ * @param target The renderer to create the texture on.
+ * @param font The font to use for rendering the text.
+ * @param color The color of the text.
+ * @param fmt The format string for the text.
+ * @param ... Additional arguments for the format string.
+ * @return The created Sprite, or NULL if an error occurred.
+ */
+Sprite createTextSprite(SDL_Renderer* target, TTF_Font* font, Color color, const char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+
+    Sprite textTexture = vscreateTextSprite(target, font, color, fmt, args);
+
+    va_end(args);
+
+    return textTexture;
+}
+
+/**
+ * Creates a Game Object containing formatted text using the given font, color, and format string.
+ *
+ * @param font The font to use for rendering the text.
+ * @param color The color of the text.
+ * @param fmt The format string for the text.
+ * @return The created object, or NULL if an error occurred.
+*/
+
+GameObject* createTextObject(TTF_Font* font, Color color, const char* fmt, ...){
+    GameObject* newObj = createGameObject(NULL,0,0);
+    if(newObj == NULL){
+        //TODO: Proper error handling
+    }
+
+    va_list args;
+    va_start(args,fmt);
+
+    Sprite textTexture = vscreateTextSprite(screenState.renderer, font, color, fmt, args);
+
+    va_end(args);
+
+    if(textTexture == NULL){
+        //TODO: Proper error handling
+        destroyObject(newObj);
+        return NULL;
+    }
+    int textH, textW;
+    SDL_QueryTexture(textTexture, NULL, NULL, &textW, &textH);
+
+    addObjectPart(
+        screenState.renderer,
+        newObj,
+        textTexture,
+        0,
+        0,
+        textH,
+        textW
+    );
+
+    return newObj;
 }
 
 //TODO: Move entry point somewhere that makes more sense
 int main() {
     setup();
 
-    while(gameState.isRunning){
+    while(screenState.isRunning){
         process_input();
         if (update()){
             break;

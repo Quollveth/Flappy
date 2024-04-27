@@ -13,13 +13,13 @@ typedef union {
         unsigned char b;
     };
 } Color;
+#define CONVERT_COLOR(color) (SDL_Color){color.r, color.g, color.b, 255}
 #define SET_COLOR(sdlRender, color) SDL_SetRenderDrawColor(sdlRender, color.b, color.g, color.r, 255)
 
 
 /**** OBJECT UTILITIES ****/
 
 #define MAX_PIECES 32 //max number of sprites per object
-#define MAX_TEXT 1024 //max text buffer
 
 /** DEFINITIONS **/
 
@@ -44,6 +44,7 @@ typedef struct {
     ObjectPart* parts[MAX_PIECES];
     int partCount;
     SDL_Rect* bounds; //object bound, used for collision checking and placing all the sprites, can be different from the actual drawn bounds
+    bool isText;
 }GameObject;
 
 /* SPRITE HANDLING */
@@ -105,6 +106,8 @@ GameObject* initializeObject(SDL_Renderer* target){
         obj->parts[i] = NULL;
     }
     obj->partCount = 0;
+
+    obj->isText = false;
 
     obj->id = id;
     id++;
