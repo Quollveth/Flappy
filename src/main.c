@@ -270,5 +270,18 @@ int gameLogic(float delta_time){
 
 void gameCleanup(){
     //called once, cleanup everything
+    destroyGameObject(pauseText);
+    destroyGameObject(scoreBoard);
+    TTF_CloseFont(VT3);
+
+    for (int i = 0; i < maxPipes; i++){
+        if(pipes[i] == NULL) continue;
+        destroyPipe(pipes[i]);
+    }
+
     destroyGameObject(bird);
+
+    DESTROY_SPRITE(pipeMiddleSprite);
+    DESTROY_SPRITE(pipeEndSprite);
+    DESTROY_SPRITE(birdSprite);
 }
