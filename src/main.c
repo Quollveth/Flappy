@@ -8,6 +8,8 @@
 #define pipeMiddleAsset "./assets/pipe_middle.bmp"
 #define pipeEndAsset "./assets/pipe_end.bmp"
 
+#define fontAsset "./assets/VT323/VT323.ttf"
+
 #define PIPE_DISTANCE 300 //distance between pipes
 #define PIPE_GAP 150 //gap between top and bottom pipe
 
@@ -21,7 +23,13 @@ typedef struct {
 Sprite birdSprite;
 Sprite pipeEndSprite;
 Sprite pipeMiddleSprite;
+
 GameObject* bird;
+
+TTF_Font* VT3;
+GameObject* scoreBoard;
+
+GameObject* pauseText;
 
 int maxPipeSegments; //how many segments are needed to fill the screen
 int maxPipes;
@@ -91,6 +99,8 @@ inline static void movePipe(Pipe* pipe,int newX){
 int gameSetup(){
     //called once, setup everything, return 1 for failure
     srand(time(NULL));
+    score = 0;
+    paused = false;
 
     birdSprite = loadSprite(birdAsset);
     pipeEndSprite = loadSprite(pipeEndAsset);
@@ -109,9 +119,33 @@ int gameSetup(){
         pipes[i] = createPipe(gameSettings.WIN_WIDTH + (i*PIPE_DISTANCE));
     }
 
-    score = 0;
-    paused = false;
+    VT3 = TTF_OpenFont(fontAsset,32);
+    scoreBoard = createTextObject(
+        VT3,
+        (Color){0x000000},
+        "Score:"
+    );
+
+    moveSimpleObject(scoreBoard,10,10);
+
+    pauseText = createTextObject(
+        VT3,
+        (Color){0x000000},
+        "Game is paused"
+    );
+    pauseText->render = false;
+
+    moveSimpleObject(
+        pauseText,
+        gameSettings.WIN_WIDTH/2 - pauseText->bounds->w/2,
+        gameSettings.WIN_HEIGHT/2 - pauseText->bounds->h/2
+    );
     return 0;
+}
+
+void pauseGame(){
+    paused = !paused;
+    pauseText->render = paused;
 }
 
 void gameInput(int key){
@@ -120,7 +154,7 @@ void gameInput(int key){
         moveSimpleObject(bird, bird->bounds->x, bird->bounds->y - 50);
     }
     if (key == SDLK_ESCAPE) {
-        paused = !paused;
+        pauseGame();
     }
 }
 
@@ -132,8 +166,13 @@ int die(){
 int gameLogic(float delta_time){
     //called every frame, return 1 to quit game 0 to continue
     if(paused) return 0;
-    printf("\033[2J\033[H\n");
-    printf("Score: %d\n",score);
+
+    updateObjectText(
+        scoreBoard,
+        VT3,
+        (Color){0x000000},
+        "Score: %d",score
+    );
 
     static int lastScored = -1;
 
