@@ -144,6 +144,34 @@ int gameSetup(){
     return 0;
 }
 
+void resetGame(){
+    moveSimpleObject(bird,100,50);
+
+    for (int i = 0; i < maxPipes; i++){
+        destroyPipe(pipes[i]);
+        pipes[i] = createPipe(gameSettings.WIN_WIDTH + (i*PIPE_DISTANCE));
+    }
+
+    score = 0;
+    paused = false;
+    updateObjectText(
+        pauseText,
+        VT3,
+        (Color){0x000000},
+        "Game is paused"
+    );
+    pauseText->render = false;
+
+    moveSimpleObject(
+        pauseText,
+        gameSettings.WIN_WIDTH/2 - pauseText->bounds->w/2,
+        gameSettings.WIN_HEIGHT/2 - pauseText->bounds->h/2
+    );
+
+    dead = false;
+    paused = false;
+}
+
 void pauseGame(){
     paused = !paused;
     pauseText->render = paused;
@@ -153,7 +181,11 @@ int quit = 0;
 void gameInput(int key){
     //called every time a key is pressed
     if (key == SDLK_SPACE) {
-        if(dead || paused) return;
+        if(paused) return;
+        if(dead){
+            resetGame();
+            return;
+        }
         moveSimpleObject(bird, bird->bounds->x, bird->bounds->y - 50);
     }
     if (key == SDLK_ESCAPE) {
