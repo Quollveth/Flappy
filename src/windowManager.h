@@ -48,14 +48,14 @@ enum err_types {
 
 
 static int initialize_window() {
-    if(TTF_Init() != 0){
-        return (enum err_types)SDL_INIT;
-    }
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
         return (enum err_types)SDL_INIT;
     }
+    if(TTF_Init() != 0){
+        return (enum err_types)SDL_INIT;
+    }
     screenState.window = SDL_CreateWindow(
-        NULL,
+        "Flappy Bird",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
         gameSettings.WIN_WIDTH,
@@ -65,7 +65,7 @@ static int initialize_window() {
     if (!screenState.window) {
         return (enum err_types)WINDOW;
     }
-    
+
     screenState.renderer = SDL_CreateRenderer(screenState.window,-1,0);
     if (!screenState.renderer) {
         return (enum err_types)RENDER;
@@ -116,6 +116,7 @@ static void closeGame(bool error,enum err_types err_type){
     SDL_DestroyWindow(screenState.window);
     sdl_quit:
     SDL_Quit();
+    TTF_Quit();
     skip_all:
     exit(error);
 
