@@ -44,7 +44,7 @@ typedef struct {
     ObjectPart* parts[MAX_PIECES];
     int partCount;
     SDL_Rect* bounds; //object bound, used for collision checking and placing all the sprites, can be different from the actual drawn bounds
-    bool isText;
+    bool render;
 }GameObject;
 
 /* SPRITE HANDLING */
@@ -107,7 +107,7 @@ GameObject* initializeObject(SDL_Renderer* target){
     }
     obj->partCount = 0;
 
-    obj->isText = false;
+    obj->render = true;
 
     obj->id = id;
     id++;

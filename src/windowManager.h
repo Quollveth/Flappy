@@ -48,7 +48,10 @@ enum err_types {
 
 
 static int initialize_window() {
-    if (SDL_Init(SDL_INIT_EVERYTHING) != 0 && TTF_Init() != 0) {
+    if(TTF_Init() != 0){
+        return (enum err_types)SDL_INIT;
+    }
+    if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
         return (enum err_types)SDL_INIT;
     }
     screenState.window = SDL_CreateWindow(
@@ -185,8 +188,9 @@ static void render(){
 
     //render game objects
     for(int i=0;i < screenState.toDraw.len;i++){
+        if(screenState.toDraw.buffer[i]->render == false) continue;
         for(int j=0;j < screenState.toDraw.buffer[i]->partCount; j++){
-        
+
         if(screenState.toDraw.buffer[i] == NULL) continue;
         if(screenState.toDraw.buffer[i]->parts[j] == NULL) continue;
 
@@ -389,6 +393,24 @@ GameObject* createTextObject(TTF_Font* font, Color color, const char* fmt, ...){
     );
 
     return newObj;
+}
+
+void updateObjectText(GameObject* obj, TTF_Font* font, Color color, const char* fmt, ...){
+    va_list args;
+    va_start(args,fmt);
+
+    Sprite textTexture = vscreateTextSprite(screenState.renderer, font, color, fmt, args);
+
+    va_end(args);
+
+    if(textTexture == NULL){
+        return;
+        //TODO: Proper error handling
+    }
+    int textH, textW;
+    SDL_QueryTexture(textTexture, NULL, NULL, &textW, &textH);
+
+    obj->parts[obj->partCount-1]->sprite = textTexture;
 }
 
 //TODO: Move entry point somewhere that makes more sense
