@@ -37,6 +37,7 @@ Pipe* *pipes; //Pipe* pipes[maxPipes] but that's a dynamic value
 
 int score;
 bool paused;
+bool dead;
 
 inline static int randomNumber(int cap) {return rand() % cap;}
 
@@ -148,24 +149,42 @@ void pauseGame(){
     pauseText->render = paused;
 }
 
+int quit = 0;
 void gameInput(int key){
     //called every time a key is pressed
     if (key == SDLK_SPACE) {
+        if(dead || paused) return;
         moveSimpleObject(bird, bird->bounds->x, bird->bounds->y - 50);
     }
     if (key == SDLK_ESCAPE) {
+        if(dead){
+            quit = 1;
+            return;
+        }
         pauseGame();
     }
 }
 
-int die(){
-    //TODO: Show score and prompt the player if they'd like to continue
-    return 1;
+void die(){
+    dead = true;
+    updateObjectText(
+        pauseText,
+        VT3,
+        (Color){0x000000},
+        "Press esc to quit or space to continue"
+    );
+    moveSimpleObject(
+        pauseText,
+        gameSettings.WIN_WIDTH/2 - pauseText->bounds->w,
+        pauseText->bounds->y
+    );
+    pauseText->render = true;
 }
 
 int gameLogic(float delta_time){
     //called every frame, return 1 to quit game 0 to continue
     if(paused) return 0;
+    if(dead) return quit;
 
     updateObjectText(
         scoreBoard,
@@ -197,7 +216,7 @@ int gameLogic(float delta_time){
                 ||
                 SDL_HasIntersection(bird->bounds,pipes[i]->bottom->bounds)
             ){
-                return die();
+                die();
             }
         }
 

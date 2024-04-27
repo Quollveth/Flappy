@@ -411,6 +411,8 @@ void updateObjectText(GameObject* obj, TTF_Font* font, Color color, const char* 
     SDL_QueryTexture(textTexture, NULL, NULL, &textW, &textH);
 
     obj->parts[obj->partCount-1]->sprite = textTexture;
+    obj->parts[obj->partCount-1]->bounds->h = textH;
+    obj->parts[obj->partCount-1]->bounds->w = textW;
 }
 
 //TODO: Move entry point somewhere that makes more sense
