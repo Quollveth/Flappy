@@ -3,13 +3,13 @@
 #include <SDL2/SDL.h>
 #include "./windowManager.h"
 
-#define birdAsset "./assets/bird.bmp"
-//50x35
-#define pipeMiddleAsset "./assets/pipe_middle.bmp"
-#define pipeEndAsset "./assets/pipe_end.bmp"
+// Assets
+#define birdAsset "./assets/bird.bmp" //50x35
+#define pipeMiddleAsset "./assets/pipe_middle.bmp" //50x50
+#define pipeEndAsset "./assets/pipe_end.bmp" //50x50
+#define fontAsset "./assets/VT323/VT323.ttf" // Licensed under the SIL Open Font License
 
-#define fontAsset "./assets/VT323/VT323.ttf"
-
+// Definitions
 #define PIPE_DISTANCE 300 //distance between pipes
 #define PIPE_GAP 150 //gap between top and bottom pipe
 
@@ -17,24 +17,20 @@ typedef struct {
     GameObject* top;
     GameObject* bottom;
     int xPos;
-}Pipe; //there is no way for a object to have multiple bounding boxes but i still want pipes to be one thing instead of two separate objects
+}Pipe;
 
-//gamestate things for this file
+// Objects used by the game, need to be global to be used by the game functions
 Sprite birdSprite;
 Sprite pipeEndSprite;
 Sprite pipeMiddleSprite;
-
 GameObject* bird;
-
 TTF_Font* VT3;
 GameObject* scoreBoard;
-
 GameObject* pauseText;
 
-int maxPipeSegments; //how many segments are needed to fill the screen
+int maxPipeSegments; //how many segments are needed to fill the screen vetically
 int maxPipes;
 Pipe* *pipes; //Pipe* pipes[maxPipes] but that's a dynamic value
-
 int score;
 bool paused;
 bool dead;

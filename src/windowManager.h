@@ -12,7 +12,7 @@ int gameLogic(float delta_time);//called every frame, return 1 to quit game 0 to
 void gameCleanup();//called once, cleanup everything
 
 /*
-* Game settings read from ini file
+* Game settings
 */
 struct {
     int WIN_HEIGHT;
@@ -119,13 +119,10 @@ static void closeGame(bool error,enum err_types err_type){
     TTF_Quit();
     skip_all:
     exit(error);
-
-    //TODO: find what's leaking memory
 }
 
 static void setup(){
 
-    //read settings file in here, for now they are hardcoded
     gameSettings.TARG_FPS = 30;
     gameSettings.TARG_TT = 1000/gameSettings.TARG_FPS;
     gameSettings.WIN_WIDTH = 800;
@@ -144,7 +141,7 @@ static void setup(){
     //initialize
     int initialization = initialize_window();
 
-    if(!initialization) closeGame(true,initialization); //if something done fucked up stop now
+    if(!initialization) closeGame(true,initialization);
 
     //let the game setup it's own stuff    
     screenState.isRunning = !gameSetup(); //returns 1 on failure
@@ -196,31 +193,15 @@ static void render(){
         if(screenState.toDraw.buffer[i]->parts[j] == NULL) continue;
 
         SDL_RenderCopyEx(
-            screenState.renderer,
-            screenState.toDraw.buffer[i]->parts[j]->sprite,
-            NULL,
-            screenState.toDraw.buffer[i]->parts[j]->bounds,
-            0.0,
-            NULL,
-            screenState.toDraw.buffer[i]->parts[j]->flip
+            /*renderer*/screenState.renderer,
+            /*texture*/screenState.toDraw.buffer[i]->parts[j]->sprite,
+            /*src - null for entire sprite*/NULL,
+            /*destination*/screenState.toDraw.buffer[i]->parts[j]->bounds,
+            /*rotation*/0.0,
+            /*center - null for default*/NULL,
+            /*flip*/screenState.toDraw.buffer[i]->parts[j]->flip
         );
-
-        #ifdef RENDER_DEBUG
-        debug_render:
-        SET_COLOR(screenState.renderer,(Color){0xEBC634});
-        SDL_RenderDrawRect(
-            screenState.renderer,
-            screenState.toDraw.buffer[i]->parts[j]->bounds
-        );
-        #endif
         }
-        #ifdef RENDER_DEBUG
-        SET_COLOR(screenState.renderer,(Color){0xEB34C3});
-        SDL_RenderDrawRect(
-            screenState.renderer,
-            screenState.toDraw.buffer[i]->bounds
-        );
-        #endif
     }
 
     SDL_RenderPresent(screenState.renderer);
